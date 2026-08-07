@@ -334,7 +334,7 @@ function renderDash(){
   const done=db.tasks.filter(x=>x.status==='done');
   const all=db.tasks.length;
   const rate=all?Math.round(done.length/all*100):0;
-  const weekDone=db.tasks.filter(x=>x.finishDate&&{const d=new Date(x.finishDate+'T00:00:00');const ws=new Date();ws.setDate(ws.getDate()-ws.getDay()+1);return d>=ws});
+  const weekDone=db.tasks.filter(x=>{if(!x.finishDate)return false;const d=new Date(x.finishDate+'T00:00:00');const ws=new Date();ws.setDate(ws.getDate()-ws.getDay()+1);return d>=ws});
   document.getElementById('dashCards').innerHTML=`
     <div class="card"><div class="label">今日到期/完成</div><div class="value">${todayTasks.length}</div><div class="sub">今天 ${t}</div></div>
     <div class="card"><div class="label">进行中</div><div class="value">${doing.length}</div><div class="sub">${db.tasks.filter(x=>x.status==='todo').length} 个待办</div></div>
