@@ -809,23 +809,24 @@ function readerFontUp(){readerFont=Math.min(28,readerFont+2);renderReaderPage()}
 function readerFontDown(){readerFont=Math.max(12,readerFont-2);renderReaderPage()}
 
 /* ================= 小说阅读 · 书源引擎 ================= */
-const NL_LS={local:'nl_local',marks:'nl_marks',prefs:'nl_prefs',prog:'nl_progress'};
+const NL_LS={local:'nl_local',marks:'nl_marks',prefs:'nl_prefs',prog:'nl_progress',cache:'nl_cache_v1'};
 const BQG_TOC='dd a,#list a,#list dd a,.listmain dd a,.chapter-list a,#chapterlist a,.book-list a,.volume a';
-const BQG_CONTENT='#content,#chaptercontent,.content,#inner,.read-content,#booktxt,.showtxt,.chapter-content,#htmlContent';
+const BQG_CONTENT='#content,#chaptercontent,.content,#inner,.read-content,#booktxt,.showtxt,.chapter-content,#htmlContent,article,article.font_max,.text,.readtext';
 function mkSrc(id,name,host,alive,opts){return Object.assign({id,name,host,alive,search:'/search.php?q={q}',charset:'utf-8',tocSel:BQG_TOC,contentSel:BQG_CONTENT,enabled:alive>=1},opts||{})}
+/* 2026-08-07 实测：bxwx9 全流程可用（搜索/目录/正文/分页）；xsw 搜索可用正文待验；
+   biquge345/365 站点存活但搜索已关闭；其余为历史源（可在源管理中启用测试）。
+   全部源经 CORS 代理链（allorigins→codetabs→corslol）串行请求。 */
 const NOVEL_SOURCES=[
-  /* —— 实测可用（2026-08 验证） —— */
-  mkSrc('bxwx9','笔下文学','www.bxwx9.org',2),
-  mkSrc('bq365','笔趣阁365','www.biquge365.net',2,{search:'/?s={q}'}),
-  mkSrc('xsw','小说天堂','www.xsw.tw',2,{search:'/modules/article/search.php?searchkey={q}',charset:'big5',contentSel:'#htmlContent,#content,.read-content'}),
-  /* —— 站点存活、搜索路径待验证 —— */
-  mkSrc('bq345','笔趣阁345','www.biquge345.com',1,{search:'/?s={q}'}),
-  mkSrc('bigee','笔趣阁Bigee','www.bigee.cc',1),
-  mkSrc('bqgui','笔趣阁GUI','www.bqgui.cc',1),
-  mkSrc('yruan','新笔趣阁','www.yruan.com',1),
-  /* —— 历史经典书源（域名可能已失效，可在源管理中启用/编辑） —— */
+  mkSrc('bxwx9','笔下文学','www.bxwx9.org',2,{contentSel:'article.font_max,article,#content,#chaptercontent,.content,#inner',paged:true}),
+  mkSrc('xsw','小说天堂','www.xsw.tw',1,{search:'/modules/article/search.php?searchkey={q}',charset:'big5',contentSel:'#htmlContent,#content,.read-content,.content,.text'}),
+  mkSrc('bq365','笔趣阁365','www.biquge365.net',0,{search:'/s.php?s={q}'}),
+  mkSrc('bq345','笔趣阁345','www.biquge345.com',0,{search:'/s.php?s={q}'}),
+  mkSrc('bigee','笔趣阁Bigee','www.bigee.cc',0),
+  mkSrc('bqgui','笔趣阁GUI','www.bqgui.cc',0),
+  mkSrc('yruan','新笔趣阁','www.yruan.com',0),
+  mkSrc('shuqugeorg','书趣阁org','www.shuquge.org',0,{search:'/search?q={q}'}),
+  /* —— 历史经典书源（域名可能已失效，可在源管理中启用测试） —— */
   mkSrc('bqg128','笔趣阁128','www.bqg128.com',0),
-  mkSrc('biquge','笔趣阁co','www.biquge.co',0),
   mkSrc('xbiquge','笔趣阁la','www.xbiquge.la',0),
   mkSrc('ibiquges','笔趣阁es','www.ibiquges.com',0),
   mkSrc('bq5200','笔趣阁5200','www.biqu5200.net',0),
@@ -849,29 +850,33 @@ const NOVEL_SOURCES=[
   mkSrc('ranwen','燃文小说','www.ranwen1.com',0),
   mkSrc('bq2020','笔趣阁2020','www.bqg2020.com',0),
   mkSrc('35xs','三五小说网','www.35xs.com',0),
-  mkSrc('shuqugeorg','书趣阁org','www.shuquge.org',0,{search:'/search?q={q}'}),
   mkSrc('69shuba','69书吧','www.69shuba.com',0,{search:'/search.php?q={q}',contentSel:'#content,.content,.txtnav'}),
 ];
 const NOVEL_PROXIES=[
   {id:'allorigins-raw',tpl:'https://api.allorigins.win/raw?url={u}'},
   {id:'allorigins-get',tpl:'https://api.allorigins.win/get?url={u}',json:true},
   {id:'codetabs',tpl:'https://api.codetabs.com/v1/proxy?quest={u}'},
-  {id:'corsproxy',tpl:'https://corsproxy.io/?url={u}'},
   {id:'corslol',tpl:'https://api.cors.lol/?url={u}'},
 ];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const NL_HOT=['斗破苍穹','诡秘之主','大奉打更人','赘婿','凡人修仙传','庆余年','雪中悍刀行','盗墓笔记','三体','遮天','完美世界','牧神记'];
 function nlSrc(id){return NOVEL_SOURCES.find(s=>s.id===id)}
-function fetchT(url,ms){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms||9000);return fetch(url,{signal:c.signal,headers:{Referer:new URL(url).origin+'/'}}).finally(()=>clearTimeout(t))}
+function fetchT(url,ms){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms||9000);return fetch(url,{signal:c.signal}).finally(()=>clearTimeout(t))}
 function decodeBuf(buf,charset){try{return new TextDecoder(charset||'utf-8').decode(buf)}catch(e){return new TextDecoder('utf-8').decode(buf)}}
 async function novelFetch(url,charset,ms){
+  const tmo=ms||10000;
   for(let attempt=0;attempt<2;attempt++){
-    try{const r=await fetchT(url,ms||9000);if(r.ok)return decodeBuf(await r.arrayBuffer(),charset)}catch(e){}
-    for(const p of NOVEL_PROXIES){
-      try{const r=await fetchT(p.tpl.replace('{u}',encodeURIComponent(url)),ms||9000);
-        if(r.ok){const buf=await r.arrayBuffer();
-          if(p.json){const j=JSON.parse(decodeBuf(buf,'utf-8'));if(j&&j.contents)return j.contents}
-          return decodeBuf(buf,charset)}}
-      catch(e){}
+    for(const p of [null,...NOVEL_PROXIES]){
+      try{
+        const finalUrl=p?p.tpl.replace('{u}',encodeURIComponent(url)):url;
+        const r=await fetchT(finalUrl,p&&p.id==='allorigins-raw'?Math.max(tmo,12000):tmo);
+        if(!r.ok)throw 0;
+        const buf=await r.arrayBuffer();
+        if(p&&p.json){const j=JSON.parse(decodeBuf(buf,'utf-8'));if(j&&j.contents!==undefined)return j.contents;throw 0}
+        const txt=decodeBuf(buf,charset);
+        if(txt&&txt.trim().length>50)return txt;
+        throw 0;
+      }catch(e){await sleep(300)}
     }
   }
   throw new Error('通道失败');
@@ -885,12 +890,13 @@ function parseSearch(html,src){
   while((m=re.exec(html))){
     const href=m[1].trim(),text=cleanTxt(m[2]);
     if(text.length<2||text.length>40)continue;
-    if(!/(book|books?|chapter|b\/|\/b[0-9]|\/b\/)/i.test(href))continue;
-    if(/首页|分类|排行|书架|登录|注册|加入书|开始阅读|直达|返回|上一页|下一页|推荐|玄幻|都市|科幻|历史|网游|武侠/.test(text)&&!/(第.{1,8}[章节])/.test(text))continue;
-    if(seen.has(text))continue;seen.add(text);
+    if(!/(book|books?|chapter|b\/|\/b[0-9]|\/b\/|\d{4,}\.html)/i.test(href))continue;
+    if(/首页|分类|排行|书架|登录|注册|加入书|开始阅读|直达|返回|上一页|下一页|推荐|玄幻|都市|科幻|历史|网游|武侠|全部|完本/.test(text)&&!/(第.{1,8}[章节])/.test(text))continue;
+    const text2=text.replace(/^\[[^\]]{2,10}\]/,'').trim();
+    if(text2.length<2||seen.has(text2))continue;seen.add(text2);
     const bm=href.match(/chapter\/(\d+)\//);
     let tocUrl=bm?('https://'+src.host+'/book/'+bm[1]+'/'):absUrl(href,'https://'+src.host+'/');
-    items.push({title:text,url:tocUrl,src:src.id,chapUrl:bm?absUrl(href,'https://'+src.host+'/'):''});
+    items.push({title:text2,url:tocUrl,src:src.id,chapUrl:bm?absUrl(href,'https://'+src.host+'/'):''});
     if(items.length>=20)break;
   }
   if(!items.length){ /* 兜底：任意含"第x章"的链接当结果 */
@@ -940,7 +946,7 @@ function parseContent(html,src){
     .replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
     .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&ldquo;/g,'“').replace(/&rdquo;/g,'”');
   return txt.split('\n').map(s=>s.replace(/\s+/g,' ').trim())
-    .filter(s=>s&&!/^(请收藏|章节错误|最快更新|天才一秒|本站新域名|加入书签|推荐票|月票|最新章节|手机用户|一秒记住|顶点小说|笔趣阁手机版|www\.|error|function\s*\(|var\s+\w+=)/.test(s)).join('\n');
+    .filter(s=>s&&!/^(请收藏|章节错误|最快更新|天才一秒|本站新域名|加入书签|推荐票|月票|最新章节|手机用户|一秒记住|顶点小说|笔趣阁手机版|www\.|error|function\s*\(|var\s+\w+=|第\s*\(?\s*\d+\s*\/?\s*\d+\s*\)?\s*页)/.test(s)).join('\n');
 }
 /* ---- 搜索流程 ---- */
 let nlResults=[],nlBusy=false;
@@ -961,25 +967,30 @@ async function novelSearch(){
   if(!q){toast('请输入书名或作者');return}
   nlBusy=true;
   const loading=document.getElementById('nlLoading');
-  const list=NOVEL_SOURCES.filter(s=>s.enabled);
-  loading.innerHTML='<span class="spin" style="display:inline-block;width:14px;height:14px;border:2px solid #eef1f5;border-top-color:#8e44ad;border-radius:50%;animation:spin .8s linear infinite"></span> 正在多源并发搜索「'+esc(q)+'」…';
+  const list=NOVEL_SOURCES.filter(s=>s.enabled).slice(0,6);
+  if(!list.length){loading.textContent='没有启用的书源，请到「源管理」启用';nlBusy=false;return}
+  loading.innerHTML='<span class="spin" style="display:inline-block;width:14px;height:14px;border:2px solid #eef1f5;border-top-color:#8e44ad;border-radius:50%;animation:spin .8s linear infinite"></span> 正在多源搜索「'+esc(q)+'」（'+list.length+' 源，稍候…）';
   list.forEach(s=>setSrcTag(s.id,'busy'));
   nlResults=[];
   const t0=Date.now();
-  const jobs=list.map(async s=>{
-    try{
-      const url='https://'+s.host+s.search.replace('{q}',encodeURIComponent(q));
-      const html=await novelFetch(url,s.charset,10000);
-      const items=parseSearch(html,s);
-      setSrcTag(s.id,items.length?'ok':'err');
-      return {s,items};
-    }catch(e){setSrcTag(s.id,'err');return {s,items:[]}}
-  });
-  const settled=await Promise.all(jobs);
-  settled.forEach(j=>{j.items.forEach(it=>{if(!nlResults.some(x=>x.title===it.title&&x.src===it.src))nlResults.push(it)})});
+  /* 小并发 2，防止免费代理限流；每源串行走 直连→4代理 */
+  let idx=0;
+  const worker=async()=>{
+    while(idx<list.length){
+      const s=list[idx++];
+      try{
+        const url='https://'+s.host+s.search.replace('{q}',encodeURIComponent(q));
+        const html=await novelFetch(url,s.charset,9000);
+        const items=parseSearch(html,s);
+        setSrcTag(s.id,items.length?'ok':'err');
+        const j={s,items};j.items.forEach(it=>{if(!nlResults.some(x=>x.title===it.title&&x.src===it.src))nlResults.push(it)});
+      }catch(e){setSrcTag(s.id,'err')}
+    }
+  };
+  await Promise.all([worker(),worker()]);
   nlBusy=false;
   const dur=((Date.now()-t0)/1000).toFixed(1);
-  loading.textContent=nlResults.length?`共找到 ${nlResults.length} 个结果（${dur}s，来自 ${new Set(nlResults.map(r=>r.src)).size} 个源）`:'没有找到结果，可换关键词、换源或导入 TXT';
+  loading.textContent=nlResults.length?`共找到 ${nlResults.length} 个结果（${dur}s，来自 ${new Set(nlResults.map(r=>r.src)).size} 个源）`:'没有找到结果：免费书源随时可能失效，可换关键词、到「源管理」启用其他源测试，或导入 TXT 离线阅读';
   renderNovelResults();
 }
 function renderNovelResults(){
@@ -1128,7 +1139,7 @@ async function openNovel(i){
   const r=nlResults[i];if(!r)return;
   const src=nlSrc(r.src);
   document.getElementById('novelReader').classList.remove('hidden');
-  NR={title:r.title,src,chapters:[],chapUrl:r.chapUrl||''};
+  NR={title:r.title,src,chapters:[],chapUrl:r.chapUrl||'',tocUrl:r.url};
   document.getElementById('nrTitle').textContent=r.title+' · 目录加载中';
   showNrLoading('正在获取目录…');
   try{
@@ -1139,6 +1150,7 @@ async function openNovel(i){
     const prog=JSON.parse(localStorage.getItem(NL_LS.prog)||'{}')[NR.title]||{bi:0,ratio:0};
     NR.cur=Math.min(prog.bi||0,NR.chapters.length-1);NR.resumeRatio=prog.ratio||0;NR._restored=false;
     renderToc();updateNrTitle();await nrLoadChapter(NR.cur);
+    loadMoreToc(); /* 后台补齐目录分页 */
   }catch(e){
     nrBody().innerHTML='<div class="nr-loading">目录加载失败：网络或书源不可用。<br>建议：换一个「实测可用」源重新搜索，或导入 TXT 离线阅读。</div>';
   }
@@ -1156,7 +1168,7 @@ function openShelfNovel(id){
   if(b.novel.local){openLocalNovel(b.novel.id);return}
   const src=nlSrc(b.novel.src);
   document.getElementById('novelReader').classList.remove('hidden');
-  NR={title:b.name,src,chapters:[],chapUrl:''};
+  NR={title:b.name,src,chapters:[],chapUrl:'',tocUrl:b.novel.url};
   document.getElementById('nrTitle').textContent=b.name+' · 目录加载中';
   showNrLoading('正在获取目录…');
   (async()=>{
@@ -1168,25 +1180,77 @@ function openShelfNovel(id){
       const prog=JSON.parse(localStorage.getItem(NL_LS.prog)||'{}')[b.name]||{bi:0,ratio:0};
       NR.cur=Math.min(prog.bi||0,NR.chapters.length-1);NR.resumeRatio=prog.ratio||0;NR._restored=false;
       renderToc();updateNrTitle();await nrLoadChapter(NR.cur);
+      loadMoreToc();
     }catch(e){nrBody().innerHTML='<div class="nr-loading">目录加载失败：网络或书源不可用。</div>'}
   })();
 }
 function closeNovelReader(){saveProgress();document.getElementById('novelReader').classList.add('hidden');NR=null}
+/* ---- 目录分页后台补齐（bxwx9 等 index_N.html） ---- */
+async function loadMoreToc(){
+  if(!NR||NR._tocLoading||NR._tocDone||!NR.src||!NR.tocUrl)return;
+  NR._tocLoading=true;
+  const base=NR.tocUrl.replace(/\/$/,'');
+  for(let pg=2;pg<=15;pg++){
+    const u=base+'/index_'+pg+'.html';
+    try{
+      const html=await novelFetch(u,NR.src.charset,8000);
+      const chaps=parseToc(html,NR.src,u);
+      let added=0;
+      const seen=new Set(NR.chapters.map(c=>c.u));
+      chaps.forEach(c=>{if(!seen.has(c.u)){seen.add(c.u);NR.chapters.push(c);added++}});
+      if(added===0)break;
+      if(NR.chapters.length>3000)break;
+      renderToc();
+    }catch(e){break}
+    await sleep(250);
+  }
+  NR._tocLoading=false;NR._tocDone=true;
+  renderToc();updatePos();
+}
 /* ---- 章节加载/渲染 ---- */
+function cacheGet(k){try{const c=JSON.parse(localStorage.getItem(NL_LS.cache)||'{}');return c[k]||null}catch(e){return null}}
+function cacheSet(k,v){try{
+  let c=JSON.parse(localStorage.getItem(NL_LS.cache)||'{}');c[k]=v;
+  const keys=Object.keys(c);let total=0;keys.forEach(x=>total+=JSON.stringify(c[x]).length);
+  while(total>1500000&&keys.length>20){const old=keys.shift();total-=JSON.stringify(c[old]).length;delete c[old]}
+  localStorage.setItem(NL_LS.cache,JSON.stringify(c));
+}catch(e){}}
 async function nrLoadChapter(idx){
   if(!NR||idx<0||idx>=NR.chapters.length)return;
   NR.cur=idx;saveProgress();updateNrTitle();renderToc();
   const ch=NR.chapters[idx];
-  if(ch.c){nrRenderChapter();return}
+  const ck=NR.src?NR.src.id+'|'+ch.u:'local|'+idx;
+  if(ch.c){nrRenderChapter();preloadNext();return}
+  const cached=cacheGet(ck);
+  if(cached){ch.c=cached;nrRenderChapter();preloadNext();return}
   showNrLoading('正在加载「'+esc(ch.t)+'」…');
   try{
-    const html=await novelFetch(ch.u,NR.src.charset,12000);
-    ch.c=parseContent(html,NR.src);
+    let text=await novelFetch(ch.u,NR.src.charset,12000);
+    if(NR.src&&NR.src.paged){
+      const pm=text.match(/第\s*\(?\s*(\d+)\s*\/?\s*(\d+)\s*\)?\s*页/);
+      if(pm&&+pm[2]>1){
+        const pages=[parseContent(text,NR.src)];
+        for(let pg=2;pg<=+pm[2]&&pg<=6;pg++){
+          try{pages.push(parseContent(await novelFetch(ch.u.replace(/\.html$/i,'_'+pg+'.html'),NR.src.charset,12000),NR.src))}catch(e){}
+        }
+        ch.c=pages.join('\n');
+      }else ch.c=parseContent(text,NR.src);
+    }else ch.c=parseContent(text,NR.src);
     if(ch.c.trim().length<20)throw 0;
-    nrRenderChapter();
+    cacheSet(ck,ch.c);
+    nrRenderChapter();preloadNext();
   }catch(e){
-    nrBody().innerHTML='<div class="nr-loading">本章加载失败（反爬或网络波动）。<br><button class="btn sm" onclick="nrLoadChapter('+NR.cur+')">↻ 重试本章</button> <button class="btn sm ghost" onclick="nrGoChapter(1)">跳到下一章</button></div>';
+    nrBody().innerHTML='<div class="nr-loading">本章加载失败（免费书源反爬或网络波动）。<br><button class="btn sm" onclick="nrLoadChapter('+NR.cur+')">↻ 重试本章</button> <button class="btn sm ghost" onclick="nrGoChapter(1)">跳到下一章</button></div>';
   }
+}
+function preloadNext(){
+  const ch=NR&&NR.chapters[NR.cur+1];
+  if(!ch||ch.c||!NR.src)return;
+  const ck=NR.src.id+'|'+ch.u;
+  if(cacheGet(ck)){ch.c=cacheGet(ck);return}
+  setTimeout(async()=>{
+    try{const t=await novelFetch(ch.u,NR.src.charset,12000);ch.c=parseContent(t,NR.src);cacheSet(ck,ch.c)}catch(e){}
+  },500);
 }
 function nrRenderChapter(){
   const ch=NR.chapters[NR.cur];if(!ch)return;
