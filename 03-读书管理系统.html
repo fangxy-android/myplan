@@ -98,6 +98,28 @@ body.dark .filters select,body.dark .filters input,body.dark .filters input::pla
 body.dark .empty{color:#5c6a7a}
 body.dark .progress{background:#27333f}
 @media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+/* ---------- 在线书城 ---------- */
+.store-search{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.store-search input{padding:8px 12px;border:1px solid #dde3ea;border-radius:8px;font-size:13px;flex:1;min-width:220px;outline:none}
+.store-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.store-card{background:#fff;border:1px solid #eef1f5;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:6px}
+.store-card img{height:140px;object-fit:contain;border-radius:8px;background:#f8fafc;margin-bottom:4px}
+.store-card .sc-t{font-size:14px;font-weight:700;color:#2c3e50;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.store-card .sc-a{font-size:12px;color:#7f8c9b}
+.store-card .sc-m{font-size:11px;color:#b0b8c4}
+.store-card .sc-actions{display:flex;gap:6px;margin-top:auto}
+.reader{background:#fff;border-radius:14px;width:min(860px,94vw);height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.reader-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #eef1f5;flex-wrap:wrap}
+.reader-bar b{font-size:14px;color:#2c3e50}
+.reader-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.reader-body{flex:1;overflow:auto;padding:26px 34px;font-size:16px;line-height:1.9;color:#34495e;white-space:pre-wrap;background:#fffdf8}
+body.dark .store-card{background:#1a222c;border-color:#273242}
+body.dark .store-card .sc-t{color:#e6ecf3}
+body.dark .store-search input{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .reader{background:#161d26}
+body.dark .reader-bar{border-color:#273242}
+body.dark .reader-bar b{color:#e6ecf3}
+body.dark .reader-body{background:#141a22;color:#c9d4e0}
 </style>
 </head>
 <body>
@@ -118,6 +140,7 @@ body.dark .progress{background:#27333f}
   <button data-tab="reading" onclick="switchTab('reading')">阅读打卡</button>
   <button data-tab="notes" onclick="switchTab('notes')">读书笔记</button>
   <button data-tab="stats" onclick="switchTab('stats')">年度统计</button>
+  <button data-tab="store" onclick="switchTab('store')">📚 在线书城</button>
 </nav>
 <main>
   <section id="tab-dash" class="tabpane active">
@@ -159,8 +182,38 @@ body.dark .progress{background:#27333f}
     </div>
     <div class="panel"><h3>年度书籍清单（已读完）</h3><div id="yearBooks"></div></div>
   </section>
+  <section id="tab-store" class="tabpane">
+    <div class="panel">
+      <h3>📚 在线书城 · 古登堡计划（Project Gutenberg）</h3>
+      <div class="store-search">
+        <input type="text" id="storeQuery" placeholder="搜索公版书（建议英文书名/作者，如 Pride and Prejudice、Sherlock）" onkeydown="if(event.key==='Enter')searchStore()">
+        <button class="btn" onclick="searchStore()">🔍 搜索</button>
+        <button class="btn ghost" onclick="loadRecommended()">⭐ 经典推荐</button>
+        <span style="font-size:12px;color:#9aa5b1">6 万余本公版书 · 支持全文免费阅读</span>
+      </div>
+      <div id="storeLoading" style="font-size:13px;color:#9aa5b1;margin-bottom:10px"></div>
+      <div id="storeList" class="store-grid"></div>
+    </div>
+  </section>
 </main>
-<button class="fab" onclick="openBook()">＋</button>
+<div id="readerModal" class="modal-overlay hidden" style="z-index:200">
+  <div class="reader">
+    <div class="reader-bar">
+      <b id="readerTitle"></b>
+      <div class="reader-tools">
+        <button class="btn sm ghost" onclick="readerFontDown()">A−</button>
+        <span id="readerFontVal" style="font-size:12px;color:#7f8c9b">16px</span>
+        <button class="btn sm ghost" onclick="readerFontUp()">A＋</button>
+        <button class="btn sm ghost" id="readerPrev" onclick="readerPage--;renderReaderPage()">◀ 上一页</button>
+        <span id="readerInfo" style="font-size:12px;color:#7f8c9b"></span>
+        <button class="btn sm ghost" id="readerNext" onclick="readerPage++;renderReaderPage()">下一页 ▶</button>
+        <button class="btn sm" onclick="closeModal('readerModal')">✕ 关闭</button>
+      </div>
+    </div>
+    <div id="readerBody" class="reader-body"></div>
+  </div>
+</div>
+
 
 <div id="modalBook" class="modal-overlay hidden">
   <div class="modal">
@@ -256,6 +309,7 @@ function switchTab(name){
   if(name==='reading'){renderReadCards();renderLogs()}
   if(name==='notes')renderNotes();
   if(name==='stats')renderStats();
+  if(name==='store'){renderStore()}
 }
 function closeModal(id){document.getElementById(id).classList.add('hidden')}
 
@@ -527,6 +581,89 @@ function importData(input){
   r.readAsText(f);input.value='';
 }
 
+/* ===== 在线书城（古登堡计划真实书籍） ===== */
+let storeResults=[],readerText='',readerPage=0,readerFont=16;
+const GUTENDEX='https://gutendex.com/books/?';
+const RECOMMENDED=['Pride and Prejudice','Alice in Wonderland','Sherlock Holmes','The Art of War','A Tale of Two Cities','Jane Eyre','Moby Dick','Frankenstein'];
+async function searchStore(){
+  const q=document.getElementById('storeQuery').value.trim();
+  if(!q){toast('请输入搜索关键词');return}
+  await fetchStore(q);
+}
+async function loadRecommended(){
+  const q=RECOMMENDED[Math.floor(Math.random()*RECOMMENDED.length)];
+  document.getElementById('storeQuery').value=q;
+  await fetchStore(q);
+}
+async function fetchStore(q){
+  const loading=document.getElementById('storeLoading');
+  loading.textContent='正在搜索「'+q+'」…';
+  try{
+    const r=await fetch(GUTENDEX+'search='+encodeURIComponent(q)+'&languages=en');
+    if(!r.ok)throw 0;
+    const d=await r.json();
+    storeResults=d.results||[];
+    renderStore();
+    loading.textContent=storeResults.length?('共找到 '+d.count+' 本，显示前 '+storeResults.length+' 本'):'没有找到相关书籍';
+  }catch(e){loading.textContent='搜索失败，请检查网络';storeResults=[];renderStore()}
+}
+function renderStore(){
+  const el=document.getElementById('storeList');
+  if(!storeResults.length){el.innerHTML='<div class="empty">输入书名或作者搜索公版书，或点击「经典推荐」</div>';return}
+  el.innerHTML=storeResults.map(g=>{
+    const author=g.authors&&g.authors[0]?esc(g.authors[0].name):'佚名';
+    const cover=g.formats['image/jpeg']||'';
+    const lang=(g.languages||[]).join(',');
+    return `<div class="store-card">
+      ${cover?`<img src="${cover}" loading="lazy" onerror="this.style.display='none'">`:''}
+      <div class="sc-t">${esc(g.title)}</div>
+      <div class="sc-a">${author}</div>
+      <div class="sc-m">${lang.toUpperCase()} · 下载 ${(g.download_count||0).toLocaleString()} 次</div>
+      <div class="sc-actions">
+        <button class="btn sm" onclick="addToShelf(${g.id})">📥 加入书架</button>
+        <button class="btn sm ghost" onclick="openReader(${g.id})">📖 在线阅读</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function addToShelf(id){
+  const gb=storeResults.find(b=>b.id===id);if(!gb)return;
+  if(db.books.some(b=>b.name===gb.title)){toast('这本书已在书架中');return}
+  const author=gb.authors&&gb.authors[0]?gb.authors[0].name:'未知作者';
+  db.books.push({id:uid(),name:gb.title,author,cat:'公版经典',status:'reading',progress:0,color:coverColors[db.books.length%coverColors.length],pages:''});
+  save();renderShelf();toast('已加入书架 ✓');
+}
+async function openReader(id){
+  const gb=storeResults.find(b=>b.id===id);if(!gb)return;
+  const txtUrl=gb.formats['text/plain; charset=utf-8']||gb.formats['text/plain; charset=us-ascii'];
+  if(!txtUrl){toast('该书暂无可在线阅读文本');return}
+  document.getElementById('readerModal').classList.remove('hidden');
+  document.getElementById('readerTitle').textContent=gb.title+'（古登堡计划）';
+  document.getElementById('readerBody').textContent='正在加载全文…';
+  try{
+    const r=await fetch(txtUrl);
+    if(!r.ok)throw 0;
+    let txt=await r.text();
+    const sm=txt.search(/\*\*\* START OF (THE|THIS) PROJECT GUTENBERG/i);
+    const em=txt.search(/\*\*\* END OF (THE|THIS) PROJECT GUTENBERG/i);
+    if(sm>=0)txt=txt.slice(sm);
+    if(em>sm)txt=txt.slice(0,em);
+    readerText=txt.replace(/\r/g,'');readerPage=0;
+    renderReaderPage();
+  }catch(e){document.getElementById('readerBody').textContent='全文加载失败（网络可能受限）。可尝试在新标签页打开：\n'+txtUrl}
+}
+function renderReaderPage(){
+  const body=document.getElementById('readerBody');
+  const chunk=9000,start=readerPage*chunk,end=Math.min(readerText.length,(readerPage+1)*chunk);
+  body.textContent=readerText.slice(start,end);
+  body.style.fontSize=readerFont+'px';
+  document.getElementById('readerFontVal').textContent=readerFont+'px';
+  document.getElementById('readerInfo').textContent=(readerPage+1)+' / '+Math.max(1,Math.ceil(readerText.length/chunk))+' 页';
+  document.getElementById('readerPrev').disabled=readerPage===0;
+  document.getElementById('readerNext').disabled=end>=readerText.length;
+}
+function readerFontUp(){readerFont=Math.min(28,readerFont+2);renderReaderPage()}
+function readerFontDown(){readerFont=Math.max(12,readerFont-2);renderReaderPage()}
 renderDash();
 </script>
 </body>

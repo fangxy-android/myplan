@@ -96,6 +96,14 @@ body.dark .filters select,body.dark .filters input,body.dark .filters input::pla
 body.dark .empty{color:#5c6a7a}
 body.dark .progress{background:#27333f}
 @media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+/* ---------- 时间管理方法 ---------- */
+.method-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.method-card{background:#fff;border:1px solid #eef1f5;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.method-card .mc-name{font-size:14px;font-weight:700;color:#2c3e50;margin-bottom:6px}
+.method-card .mc-desc{font-size:12px;color:#7f8c9b;line-height:1.7}
+body.dark .method-card{background:#1a222c;border-color:#273242}
+body.dark .method-card .mc-name{color:#e6ecf3}
+body.dark .method-card .mc-desc{color:#8b98a9}
 </style>
 </head>
 <body>
@@ -160,6 +168,10 @@ body.dark .progress{background:#27333f}
       <div class="panel"><h3>近 30 天专注时长</h3><canvas id="chart30"></canvas></div>
       <div class="panel"><h3>分类时间占比（本月）</h3><canvas id="chartCat"></canvas></div>
     </div>
+    <div class="panel">
+      <h3>💡 经典时间管理方法</h3>
+      <div class="method-grid" id="methodGrid"></div>
+    </div>
   </section>
 </main>
 <button class="fab" onclick="openSched()">＋</button>
@@ -223,7 +235,7 @@ function switchTab(name){
   if(name==='dash')renderDash();
   if(name==='pomo')renderPomo();
   if(name==='sched')renderSched();
-  if(name==='stats')renderStats();
+  if(name==='stats'){renderStats();renderMethods()}
 }
 function closeModal(id){document.getElementById(id).classList.add('hidden')}
 
@@ -446,6 +458,21 @@ function importData(input){
   r.readAsText(f);input.value='';
 }
 
+/* ===== 时间管理方法 ===== */
+const TIME_METHODS=[
+  {icon:'🍅',name:'番茄工作法',desc:'25 分钟专注 + 5 分钟休息，每 4 轮长休息 15-30 分钟。把大任务拆成番茄，配合本系统番茄钟使用效果最佳。'},
+  {icon:'✅',name:'GTD 工作法',desc:'收集 → 整理 → 组织 → 回顾 → 执行五步，把所有待办从大脑清空到任务清单，专注当前执行。'},
+  {icon:'📊',name:'四象限法则',desc:'按「紧急 × 重要」分四类：重要紧急立刻做，重要不紧急计划做，紧急不重要委托做，不重要不紧急少做。'},
+  {icon:'🧱',name:'时间块管理',desc:'把一天切成固定时间块，为重要事项预留整块时间（如上午 2 小时深度工作），避免碎片化。'},
+  {icon:'⏳',name:'80/20 法则',desc:'80% 的成果来自 20% 的关键任务。每天先识别并完成那 20% 的高价值事项。'},
+  {icon:'🌅',name:'晨间惯例',desc:'早起先完成最重要的一件事（MIT），在干扰最少的时间段推进核心目标。'},
+  {icon:'🎯',name:'目标拆解',desc:'用 SMART 原则定目标（具体、可衡量、可达、相关、有时限），再拆解为每天可执行的动作。'},
+  {icon:'📵',name:'深度工作',desc:'每天安排 1-2 小时无打扰时段（关通知、静音），只处理最重要任务，效率远高于碎片工作。'}
+];
+function renderMethods(){
+  const el=document.getElementById('methodGrid');if(!el)return;
+  el.innerHTML=TIME_METHODS.map(m=>`<div class="method-card"><div class="mc-name">${m.icon} ${m.name}</div><div class="mc-desc">${m.desc}</div></div>`).join('');
+}
 renderDash();
 pomoUpdate();
 </script>

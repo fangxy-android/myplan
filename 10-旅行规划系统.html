@@ -92,6 +92,18 @@ body.dark .filters select,body.dark .filters input,body.dark .filters input::pla
 body.dark .empty{color:#5c6a7a}
 body.dark .progress{background:#27333f}
 @media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+/* ---------- 天气预报 ---------- */
+.wx-search{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.wx-search select{padding:8px 12px;border:1px solid #dde3ea;border-radius:8px;font-size:13px;outline:none;background:#fff}
+.wx-current{background:linear-gradient(135deg,#eaf6ff,#f0f9ff);border-radius:14px;padding:18px 22px;display:flex;align-items:center;gap:18px;margin-bottom:14px}
+.wx-now{display:flex;align-items:center;gap:16px}
+.wx-days{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+.wx-day{background:#f8fafc;border:1px solid #eef1f5;border-radius:10px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:3px;align-items:center}
+.wx-day.today{border-color:var(--accent);background:#f0fdfa}
+.wx-day-row{display:contents}
+body.dark .wx-search select{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .wx-current{background:#14212e;border:1px solid #273242}
+body.dark .wx-day{background:#1a222c;border-color:#273242}
 </style>
 </head>
 <body>
@@ -125,6 +137,17 @@ body.dark .progress{background:#27333f}
     <div class="panel">
       <h3>旅行计划<button class="btn sm" onclick="openTrip()">＋ 新建旅行</button></h3>
       <div id="tripList"></div>
+    </div>
+    <div class="panel">
+      <h3>🌤️ 目的地天气预报 · Open-Meteo 实时数据</h3>
+      <div class="wx-search">
+        <select id="wxCity" onchange="loadWeather()"></select>
+        <button class="btn ghost" onclick="loadWeather()">🔄 刷新</button>
+        <span style="font-size:12px;color:#9aa5b1">全球 60+ 城市 7 天预报 · 免费真实天气数据</span>
+      </div>
+      <div id="wxLoading" style="font-size:13px;color:#9aa5b1;margin-bottom:10px"></div>
+      <div id="wxCurrent" class="wx-current"></div>
+      <div id="wxDays" class="wx-days"></div>
     </div>
   </section>
   <section id="tab-itinerary" class="tabpane">
@@ -270,7 +293,7 @@ function switchTab(name){
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
   document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
   if(name==='dash')renderDash();
-  if(name==='trips')renderTrips();
+  if(name==='trips'){renderTrips();if(!document.getElementById('wxCity').options.length)initWxCity()}
   if(name==='itinerary')renderItinerary();
   if(name==='budget')renderBudget();
   if(name==='packing')renderPacking();
@@ -520,6 +543,36 @@ function importData(input){
   r.readAsText(f);input.value='';
 }
 
+/* ===== 目的地天气（Open-Meteo 真实数据） ===== */
+const WX_CITIES=[['北京',39.90,116.41],['上海',31.23,121.47],['广州',23.13,113.26],['深圳',22.54,114.06],['成都',30.57,104.07],['杭州',30.27,120.16],['重庆',29.56,106.55],['武汉',30.59,114.31],['西安',34.34,108.94],['南京',32.06,118.80],['天津',39.13,117.20],['苏州',31.30,120.58],['长沙',28.23,112.94],['郑州',34.75,113.63],['青岛',36.07,120.38],['大连',38.91,121.61],['厦门',24.48,118.09],['昆明',25.04,102.71],['贵阳',26.65,106.63],['哈尔滨',45.80,126.53],['沈阳',41.80,123.43],['长春',43.88,125.32],['石家庄',38.04,114.51],['太原',37.87,112.55],['济南',36.65,117.12],['合肥',31.82,117.23],['南昌',28.68,115.86],['福州',26.07,119.30],['南宁',22.82,108.32],['海口',20.04,110.32],['三亚',18.25,109.51],['拉萨',29.65,91.14],['乌鲁木齐',43.83,87.62],['呼和浩特',40.84,111.75],['兰州',36.06,103.83],['西宁',36.62,101.78],['银川',38.49,106.23],['香港',22.32,114.17],['澳门',22.20,113.55],['台北',25.03,121.57],['东京',35.68,139.69],['首尔',37.57,126.98],['新加坡',1.35,103.82],['曼谷',13.76,100.50],['巴黎',48.86,2.35],['伦敦',51.51,-0.13],['纽约',40.71,-74.01],['洛杉矶',34.05,-118.24],['悉尼',-33.87,151.21],['迪拜',25.20,55.27],['巴厘岛',-8.65,115.22],['普吉岛',7.89,98.40]];
+const WX_CODES={0:['晴','☀️'],1:['晴间多云','🌤️'],2:['多云','⛅'],3:['阴','☁️'],45:['雾','🌫️'],48:['雾凇','🌫️'],51:['毛毛雨','🌦️'],53:['毛毛雨','🌦️'],55:['毛毛雨','🌦️'],61:['小雨','🌧️'],63:['中雨','🌧️'],65:['大雨','🌧️'],71:['小雪','🌨️'],73:['中雪','🌨️'],75:['大雪','🌨️'],77:['雪粒','❄️'],80:['阵雨','🌦️'],81:['阵雨','🌦️'],82:['强阵雨','⛈️'],95:['雷暴','⛈️'],96:['雷暴冰雹','⛈️'],99:['雷暴冰雹','⛈️']};
+function initWxCity(){
+  const sel=document.getElementById('wxCity');
+  sel.innerHTML=WX_CITIES.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join('');
+}
+async function loadWeather(){
+  const i=+document.getElementById('wxCity').value;
+  const c=WX_CITIES[i];if(!c)return;
+  const loading=document.getElementById('wxLoading');
+  loading.textContent='正在获取 '+c[0]+' 天气…';
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+c[1]+'&longitude='+c[2]+'&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto');
+    if(!r.ok)throw 0;
+    const d=await r.json();
+    renderWeather(d);loading.textContent='';
+  }catch(e){loading.textContent='获取失败，请检查网络'}
+}
+function renderWeather(d){
+  const cur=d.current_weather||{};
+  const [ct,ce]=WX_CODES[cur.weathercode]||['未知','🌡️'];
+  document.getElementById('wxCurrent').innerHTML='<div class="wx-now"><div style="font-size:44px">'+ce+'</div><div><div style="font-size:26px;font-weight:700">'+cur.temperature+'°C</div><div style="font-size:13px;color:#7f8c9b">'+ct+' · 风速 '+cur.windspeed+' km/h · '+d.timezone+'</div></div></div>';
+  document.getElementById('wxDays').innerHTML=d.daily.time.map((t,i)=>{
+    const [dt,de]=WX_CODES[d.daily.weathercode[i]]||['未知','🌡️'];
+    const date=new Date(t+'T00:00:00');
+    const wd=['周日','周一','周二','周三','周四','周五','周六'][date.getDay()];
+    return `<div class="wx-day${i===0?' today':''}"><div style="font-size:12px;color:#7f8c9b">${i===0?'今天':t.slice(5)+' '+wd}</div><div style="font-size:22px">${de}</div><div style="font-size:12px">${dt}</div><div style="font-size:13px;font-weight:700">${Math.round(d.daily.temperature_2m_max[i])}°/${Math.round(d.daily.temperature_2m_min[i])}°</div></div>`;
+  }).join('');
+}
 renderDash();
 </script>
 </body>

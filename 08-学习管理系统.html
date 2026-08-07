@@ -86,6 +86,17 @@ body.dark .filters select,body.dark .filters input,body.dark .filters input::pla
 body.dark .empty{color:#5c6a7a}
 body.dark .progress{background:#27333f}
 @media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+/* ---------- 学习资源 ---------- */
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.res-card{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid #eef1f5;border-radius:12px;padding:14px;text-decoration:none;color:#2c3e50;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.res-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.res-icon{font-size:26px;flex-shrink:0}
+.res-name{font-size:14px;font-weight:700;margin-bottom:4px}
+.res-desc{font-size:12px;color:#7f8c9b;margin-bottom:6px}
+.res-cat{font-size:11px;background:#eef1f5;color:#6b7686;padding:2px 8px;border-radius:12px}
+body.dark .res-card{background:#1a222c;border-color:#273242;color:#e6ecf3}
+body.dark .res-desc{color:#8b98a9}
+body.dark .res-cat{background:#27333f;color:#9aa7b8}
 </style>
 </head>
 <body>
@@ -106,6 +117,7 @@ body.dark .progress{background:#27333f}
   <button data-tab="logs" onclick="switchTab('logs')">学习记录</button>
   <button data-tab="exams" onclick="switchTab('exams')">考试倒计时</button>
   <button data-tab="stats" onclick="switchTab('stats')">统计分析</button>
+  <button data-tab="res" onclick="switchTab('res')">🎓 学习资源</button>
 </nav>
 <main>
   <section id="tab-dash" class="tabpane active">
@@ -142,6 +154,13 @@ body.dark .progress{background:#27333f}
     <div class="grid2">
       <div class="panel"><h3>近 30 天学习时长</h3><canvas id="chart30"></canvas></div>
       <div class="panel"><h3>各科累计时长占比</h3><canvas id="chartCat"></canvas></div>
+    </div>
+  </section>
+  <section id="tab-res" class="tabpane">
+    <div class="panel">
+      <h3>🎓 优质免费学习资源</h3>
+      <p style="font-size:12px;color:#9aa5b1;margin-bottom:12px">精选真实可访问的免费学习平台，点击卡片直接打开</p>
+      <div class="res-grid" id="resGrid"></div>
     </div>
   </section>
 </main>
@@ -249,6 +268,7 @@ function switchTab(name){
   if(name==='logs')renderLogs();
   if(name==='exams')renderExams();
   if(name==='stats')renderStats();
+  if(name==='res')renderRes();
 }
 function closeModal(id){document.getElementById(id).classList.add('hidden')}
 
@@ -492,6 +512,28 @@ function importData(input){
   r.readAsText(f);input.value='';
 }
 
+/* ===== 学习资源 ===== */
+const STUDY_RES=[
+  {icon:'🏫',name:'国家高等教育智慧教育平台',desc:'教育部官方平台，万门高校课程免费学',url:'https://higher.smartedu.cn',cat:'平台'},
+  {icon:'🎓',name:'中国大学MOOC',desc:'国内名校精品课程',url:'https://www.icourse163.org',cat:'平台'},
+  {icon:'🏛️',name:'学堂在线',desc:'清华大学发起，优质大学课程',url:'https://www.xuetangx.com',cat:'平台'},
+  {icon:'📺',name:'B站 · 大学',desc:'海量公开课与学习视频',url:'https://www.bilibili.com',cat:'视频'},
+  {icon:'🧮',name:'可汗学院',desc:'免费数学/科学/编程课程（中文版）',url:'https://zh.khanacademy.org',cat:'国际'},
+  {icon:'🦅',name:'MIT OpenCourseWare',desc:'麻省理工全部课程免费公开',url:'https://ocw.mit.edu',cat:'国际'},
+  {icon:'🌍',name:'Coursera',desc:'全球名校课程，可免费旁听',url:'https://www.coursera.org',cat:'国际'},
+  {icon:'📚',name:'edX',desc:'哈佛/MIT 等名校免费课程',url:'https://www.edx.org',cat:'国际'},
+  {icon:'💻',name:'FreeCodeCamp',desc:'免费学编程，动手做项目',url:'https://www.freecodecamp.org',cat:'编程'},
+  {icon:'🔧',name:'菜鸟教程',desc:'编程入门中文教程',url:'https://www.runoob.com',cat:'编程'},
+  {icon:'🧩',name:'LeetCode 力扣',desc:'算法刷题，备战面试',url:'https://leetcode.cn',cat:'编程'},
+  {icon:'🗣️',name:'多邻国',desc:'免费学 40+ 种语言',url:'https://www.duolingo.com',cat:'语言'},
+  {icon:'📄',name:'Google 学术',desc:'学术文献检索',url:'https://scholar.google.com',cat:'学术'},
+  {icon:'🔬',name:'Semantic Scholar',desc:'AI 驱动的学术论文检索',url:'https://www.semanticscholar.org',cat:'学术'}
+];
+function renderRes(){
+  const el=document.getElementById('resGrid');
+  if(!el)return;
+  el.innerHTML=STUDY_RES.map(r=>`<a class="res-card" href="${r.url}" target="_blank" rel="noopener"><div class="res-icon">${r.icon}</div><div><div class="res-name">${r.name}</div><div class="res-desc">${r.desc}</div><span class="res-cat">${r.cat}</span></div></a>`).join('');
+}
 renderDash();
 </script>
 </body>

@@ -88,6 +88,11 @@ body.dark .filters select,body.dark .filters input,body.dark .filters input::pla
 body.dark .empty{color:#5c6a7a}
 body.dark .progress{background:#27333f}
 @media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+/* ---------- 习惯建议库 ---------- */
+.tmpl-grid{display:flex;flex-wrap:wrap;gap:8px}
+.tmpl-chip{background:#f8fafc;border:1px solid #e8ecf1;padding:7px 13px;border-radius:20px;font-size:12.5px;color:#34495e;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:5px}
+.tmpl-chip:hover{border-color:var(--accent);color:var(--accent);background:#f0fdfa}
+body.dark .tmpl-chip{background:#1e2833;border-color:#2a3644;color:#d5dce5}
 </style>
 </head>
 <body>
@@ -117,6 +122,11 @@ body.dark .progress{background:#27333f}
     <div class="panel">
       <h3>我的习惯<button class="btn sm" onclick="openHabit()">＋ 新建习惯</button></h3>
       <div id="habitList"></div>
+    </div>
+    <div class="panel">
+      <h3>💡 健康习惯建议库</h3>
+      <p style="font-size:12px;color:#9aa5b1;margin-bottom:10px">点击直接创建习惯（可自定义目标）</p>
+      <div class="tmpl-grid" id="suggestGrid"></div>
     </div>
   </section>
   <section id="tab-heat" class="tabpane">
@@ -187,7 +197,7 @@ function switchTab(name){
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
   document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
   if(name==='dash')renderDash();
-  if(name==='habits')renderHabits();
+  if(name==='habits'){renderHabits();renderSuggest()}
   if(name==='heat')renderHeat();
 }
 function closeModal(id){document.getElementById(id).classList.add('hidden')}
@@ -333,6 +343,33 @@ function importData(input){
   r.readAsText(f);input.value='';
 }
 
+/* ===== 习惯建议库 ===== */
+const HABIT_SUGGEST=[
+  {name:'早起',icon:'🌅',color:'#e67e22',goal:'7:00 前起床'},
+  {name:'喝水',icon:'💧',color:'#2980b9',goal:'每天 8 杯水（约 1.6L）'},
+  {name:'阅读',icon:'📖',color:'#8e44ad',goal:'每天阅读 30 分钟'},
+  {name:'运动',icon:'🏃',color:'#27ae60',goal:'每天运动 30 分钟'},
+  {name:'早睡',icon:'🌙',color:'#34495e',goal:'23:00 前入睡'},
+  {name:'冥想',icon:'🧘',color:'#16a085',goal:'每天冥想 10 分钟'},
+  {name:'记账',icon:'💰',color:'#c0392b',goal:'每天记录收支'},
+  {name:'学习',icon:'🎓',color:'#2980b9',goal:'每天学习 1 小时'},
+  {name:'写日记',icon:'✍️',color:'#d35400',goal:'睡前写三行日记'},
+  {name:'护眼',icon:'👀',color:'#2c3e50',goal:'用眼 45 分钟远眺'},
+  {name:'拉伸',icon:'🤸',color:'#27ae60',goal:'久坐每小时起身拉伸'},
+  {name:'感恩',icon:'🙏',color:'#e91e63',goal:'每天记录一件感恩的事'},
+  {name:'断舍离',icon:'🧹',color:'#7f8c8d',goal:'每周整理一次桌面'},
+  {name:'称体重',icon:'⚖️',color:'#8e44ad',goal:'每周称一次体重'}
+];
+function renderSuggest(){
+  const el=document.getElementById('suggestGrid');if(!el)return;
+  el.innerHTML=HABIT_SUGGEST.map((h,i)=>`<span class="tmpl-chip" onclick="addSuggest(${i})">${h.icon} ${h.name} · ${h.goal}</span>`).join('');
+}
+function addSuggest(i){
+  const h=HABIT_SUGGEST[i];
+  if(db.habits.some(x=>x.name===h.name)){toast('该习惯已存在');return}
+  db.habits.push({id:uid(),name:h.name,icon:h.icon,color:h.color,goal:h.goal});
+  save();renderHabits();renderDash();toast('已创建习惯：'+h.name+' ✓');
+}
 renderDash();
 </script>
 </body>

@@ -89,6 +89,11 @@ body.dark .filters select,body.dark .filters input,body.dark .filters input::pla
 body.dark .empty{color:#5c6a7a}
 body.dark .progress{background:#27333f}
 @media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+/* ---------- 项目模板 ---------- */
+.tmpl-grid{display:flex;flex-wrap:wrap;gap:8px}
+.tmpl-chip{background:#f8fafc;border:1px solid #e8ecf1;padding:8px 14px;border-radius:20px;font-size:12.5px;color:#34495e;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:5px}
+.tmpl-chip:hover{border-color:var(--accent);color:var(--accent);background:#f0fdfa}
+body.dark .tmpl-chip{background:#1e2833;border-color:#2a3644;color:#d5dce5}
 </style>
 </head>
 <body>
@@ -122,6 +127,11 @@ body.dark .progress{background:#27333f}
     <div class="panel">
       <h3>全部项目<button class="btn sm" onclick="openProject()">＋ 新建项目</button></h3>
       <div id="projectList"></div>
+    </div>
+    <div class="panel">
+      <h3>🗂️ 项目模板库</h3>
+      <p style="font-size:12px;color:#9aa5b1;margin-bottom:10px">一键创建完整项目（自动附带任务与里程碑）</p>
+      <div class="tmpl-grid" id="projTmplGrid"></div>
     </div>
   </section>
   <section id="tab-tasks" class="tabpane">
@@ -234,7 +244,7 @@ function switchTab(name){
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
   document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
   if(name==='dash')renderDash();
-  if(name==='projects')renderProjects();
+  if(name==='projects'){renderProjects();renderProjTmpl()}
   if(name==='tasks')renderTasks();
   if(name==='milestones')renderMiles();
 }
@@ -434,6 +444,26 @@ function importData(input){
   r.readAsText(f);input.value='';
 }
 
+/* ===== 项目模板库 ===== */
+const PROJ_TMPLS=[
+  {name:'🖥️ 网站开发',proj:{name:'个人网站上线',status:'planning',priority:'高',desc:'从需求到上线的完整网站开发流程'},tasks:[['需求梳理','高'],['UI 设计稿','高'],['前端开发','高'],['后端接口','中'],['测试联调','中'],['部署上线','高']],miles:['需求评审通过','开发完成','正式上线']},
+  {name:'🎉 活动策划',proj:{name:'公司年会策划',status:'planning',priority:'中',desc:'活动全流程策划与执行'},tasks:[['方案撰写','高'],['场地与物料确认','高'],['宣传推广','中'],['现场执行','高'],['活动复盘','中']],miles:['方案通过','物料到位','活动举办']},
+  {name:'📖 学习考证',proj:{name:'备考专业证书',status:'planning',priority:'高',desc:'系统备考计划'},tasks:[['购买教材资料','高'],['制定学习计划','高'],['每日学习打卡','中'],['章节模拟测试','中'],['报名考试','高']],miles:['完成一轮复习','模拟考达标','考试通过']},
+  {name:'🏠 装修工程',proj:{name:'新房装修',status:'planning',priority:'中',desc:'装修全流程管理'},tasks:[['设计定稿','高'],['水电改造','高'],['泥瓦工程','中'],['木工定制','中'],['软装进场','低'],['验收入住','高']],miles:['设计方案确认','硬装完成','验收入住']}
+];
+function renderProjTmpl(){
+  const el=document.getElementById('projTmplGrid');if(!el)return;
+  el.innerHTML=PROJ_TMPLS.map((t,i)=>`<span class="tmpl-chip" onclick="addProjTemplate(${i})">${t.name} · ${t.tasks.length} 任务 / ${t.miles.length} 里程碑</span>`).join('');
+}
+function addProjTemplate(i){
+  const t=PROJ_TMPLS[i];
+  if(db.projects.some(p=>p.name===t.proj.name&&p.status!=='done')){toast('已有同名进行中项目');return}
+  const p=uid();
+  db.projects.push({id:p,name:t.proj.name,status:t.proj.status,priority:t.proj.priority,start:'',end:'',desc:t.proj.desc});
+  t.tasks.forEach((tk)=>{const name=tk[0],pr=tk[1];db.tasks.push({id:uid(),project:p,name,status:'todo',priority:pr,owner:'我',due:''})});
+  t.miles.forEach((name)=>{db.milestones.push({id:uid(),project:p,name,date:'',status:'todo'})});
+  save();renderDash();renderProjects();renderTasks();renderMiles();toast('已创建项目模板：'+t.proj.name+' ✓');
+}
 renderDash();
 </script>
 </body>

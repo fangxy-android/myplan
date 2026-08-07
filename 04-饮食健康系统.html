@@ -96,6 +96,19 @@ body.dark .filters select,body.dark .filters input,body.dark .filters input::pla
 body.dark .empty{color:#5c6a7a}
 body.dark .progress{background:#27333f}
 @media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+/* ---------- 在线营养库 ---------- */
+.off-search{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.off-search input{padding:8px 12px;border:1px solid #dde3ea;border-radius:8px;font-size:13px;flex:1;min-width:220px;outline:none}
+.off-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.off-card{background:#fff;border:1px solid #eef1f5;border-radius:12px;padding:12px;display:flex;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.off-card img{width:56px;height:56px;object-fit:contain;border-radius:8px;background:#f8fafc;flex-shrink:0}
+.off-card .oc-body{flex:1;min-width:0}
+.off-card .oc-name{font-size:13px;font-weight:700;color:#2c3e50;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.off-card .oc-nutri{font-size:11.5px;color:#7f8c9b;margin:4px 0 6px;line-height:1.5}
+.off-card .oc-actions{display:flex;gap:5px;flex-wrap:wrap}
+body.dark .off-card{background:#1a222c;border-color:#273242}
+body.dark .off-card .oc-name{color:#e6ecf3}
+body.dark .off-search input{background:#151c25;border-color:#2a3644;color:#d5dce5}
 </style>
 </head>
 <body>
@@ -158,6 +171,16 @@ body.dark .progress{background:#27333f}
       <h3>常用食品库<button class="btn sm" onclick="openFood()">＋ 添加食品</button></h3>
       <p style="font-size:12px;color:#9aa5b1;margin-bottom:12px">点击食品可快速添加到今日饮食（按 100g 计）</p>
       <div class="food-grid" id="foodGrid"></div>
+    </div>
+    <div class="panel">
+      <h3>🌐 在线营养库 · Open Food Facts</h3>
+      <div class="off-search">
+        <input type="text" id="offQuery" placeholder="搜索食物营养成分（中英文均可，如 牛奶 / milk / chicken / rice）" onkeydown="if(event.key==='Enter')searchOff()">
+        <button class="btn" onclick="searchOff()">🔍 搜索</button>
+        <span style="font-size:12px;color:#9aa5b1">全球 460 万+ 食品真实营养数据（每 100g）</span>
+      </div>
+      <div id="offLoading" style="font-size:13px;color:#9aa5b1;margin-bottom:10px"></div>
+      <div id="offList" class="off-grid"></div>
     </div>
   </section>
 </main>
@@ -501,6 +524,62 @@ function importData(input){
   r.readAsText(f);input.value='';
 }
 
+/* ===== 在线营养库（Open Food Facts 真实数据） ===== */
+let offResults=[];
+async function searchOff(){
+  const q=document.getElementById('offQuery').value.trim();
+  if(!q){toast('请输入食物名称');return}
+  const loading=document.getElementById('offLoading');
+  loading.textContent='正在搜索「'+q+'」…';
+  try{
+    const r=await fetch('https://world.openfoodfacts.org/api/v2/search?search_terms='+encodeURIComponent(q)+'&fields=product_name,nutriments,image_url,code&page_size=24');
+    if(!r.ok)throw 0;
+    const d=await r.json();
+    offResults=(d.products||[]).filter(p=>p.product_name);
+    const el=document.getElementById('offList');
+    if(!offResults.length){el.innerHTML='<div class="empty">没有找到该食物，试试英文名称（如 chicken、milk、rice）</div>';loading.textContent='';return}
+    el.innerHTML=offResults.map((p,i)=>{
+      const n=p.nutriments||{};
+      const kcal=n['energy-kcal_100g']!=null?Math.round(n['energy-kcal_100g']):(n['energy_100g']!=null?Math.round(n['energy_100g']/4.184):null);
+      const pro=n['proteins_100g']!=null?+n['proteins_100g']:null;
+      const carb=n['carbohydrates_100g']!=null?+n['carbohydrates_100g']:null;
+      const fat=n['fat_100g']!=null?+n['fat_100g']:null;
+      const nut=[];
+      if(kcal!=null)nut.push(kcal+' kcal');
+      if(pro!=null)nut.push('蛋白 '+pro+'g');
+      if(carb!=null)nut.push('碳水 '+carb+'g');
+      if(fat!=null)nut.push('脂肪 '+fat+'g');
+      return `<div class="off-card">
+        ${p.image_url?`<img src="${p.image_url}" loading="lazy" onerror="this.style.display='none'">`:''}
+        <div class="oc-body">
+          <div class="oc-name">${esc(p.product_name)}</div>
+          <div class="oc-nutri">${nut.join(' · ')||'暂无营养数据'}</div>
+          <div class="oc-actions">
+            <button class="btn sm" onclick="offAddMeal(${i})">🍽️ 记入今日</button>
+            <button class="btn sm ghost" onclick="offAddFood(${i})">＋ 存食品库</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    loading.textContent='共 '+d.count+' 条结果，显示前 '+offResults.length+' 条';
+  }catch(e){document.getElementById('offList').innerHTML='<div class="empty">搜索失败，请检查网络</div>';loading.textContent=''}
+}
+function offNutri(i){
+  const p=offResults[i];const n=p.nutriments||{};
+  const kcal=n['energy-kcal_100g']!=null?Math.round(n['energy-kcal_100g']):(n['energy_100g']!=null?Math.round(n['energy_100g']/4.184):0);
+  return{cal:Math.round(kcal)||0,pro:+(n['proteins_100g']||0),carb:+(n['carbohydrates_100g']||0),fat:+(n['fat_100g']||0)};
+}
+function offAddMeal(i){
+  const p=offResults[i];const nu=offNutri(i);
+  db.meals.push({id:uid(),date:today(),type:'加餐',name:p.product_name,grams:100,cal:nu.cal,pro:nu.pro,carb:nu.carb,fat:nu.fat});
+  save();renderMeals();renderDash();toast('已记入今日饮食（按 100g 估算）✓');
+}
+function offAddFood(i){
+  const p=offResults[i];const nu=offNutri(i);
+  if(db.foods.some(f=>f.name===p.product_name)){toast('食品库中已存在');return}
+  db.foods.push({id:uid(),name:p.product_name,cal:nu.cal,pro:nu.pro,carb:nu.carb,fat:nu.fat});
+  save();renderFoods();toast('已存入食品库 ✓');
+}
 renderDash();
 </script>
 </body>

@@ -97,6 +97,11 @@ body.dark .filters select,body.dark .filters input,body.dark .filters input::pla
 body.dark .empty{color:#5c6a7a}
 body.dark .progress{background:#27333f}
 @media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+/* ---------- 任务模板 ---------- */
+.tmpl-grid{display:flex;flex-wrap:wrap;gap:8px}
+.tmpl-chip{background:#f8fafc;border:1px solid #e8ecf1;padding:7px 13px;border-radius:20px;font-size:12.5px;color:#34495e;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:5px}
+.tmpl-chip:hover{border-color:var(--accent);color:var(--accent);background:#f0fdfa}
+body.dark .tmpl-chip{background:#1e2833;border-color:#2a3644;color:#d5dce5}
 </style>
 </head>
 <body>
@@ -127,6 +132,11 @@ body.dark .progress{background:#27333f}
     <div class="panel"><h3>即将到期</h3><div id="dueList"></div></div>
   </section>
   <section id="tab-list" class="tabpane">
+    <div class="panel">
+      <h3>📋 常用任务模板<button class="btn sm ghost" onclick="addAllTemplates()">＋ 一键全部添加</button></h3>
+      <p style="font-size:12px;color:#9aa5b1;margin-bottom:10px">点击单个模板直接添加为待办任务</p>
+      <div class="tmpl-grid" id="tmplGrid"></div>
+    </div>
     <div class="panel">
       <div class="filters">
         <select id="fStatus" onchange="renderList()"><option value="">全部状态</option><option value="todo">待办</option><option value="doing">进行中</option><option value="done">已完成</option></select>
@@ -204,7 +214,7 @@ function switchTab(name){
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
   document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
   if(name==='dash')renderDash();
-  if(name==='list')renderList();
+  if(name==='list'){renderTemplates();renderList()}
   if(name==='board')renderBoard();
   if(name==='stats')renderStats();
 }
@@ -404,6 +414,37 @@ function importData(input){
   r.readAsText(f);input.value='';
 }
 
+/* ===== 任务模板 ===== */
+const TASK_TMPLS=[
+  {name:'写周报',cat:'工作',priority:'中',due:''},
+  {name:'整理邮件收件箱',cat:'工作',priority:'低',due:''},
+  {name:'代码 Review',cat:'工作',priority:'高',due:''},
+  {name:'健身 1 小时',cat:'生活',priority:'中',due:''},
+  {name:'交房租 / 水电费',cat:'生活',priority:'高',due:''},
+  {name:'给家人打电话',cat:'生活',priority:'低',due:''},
+  {name:'学习 30 分钟',cat:'学习',priority:'中',due:''},
+  {name:'读书 20 页',cat:'学习',priority:'低',due:''},
+  {name:'整理读书笔记',cat:'学习',priority:'低',due:''},
+  {name:'复盘本周目标',cat:'成长',priority:'中',due:''},
+  {name:'记账（今日收支）',cat:'理财',priority:'中',due:''},
+  {name:'体检 / 复查预约',cat:'健康',priority:'高',due:''}
+];
+function renderTemplates(){
+  const el=document.getElementById('tmplGrid');if(!el)return;
+  el.innerHTML=TASK_TMPLS.map((t,i)=>`<span class="tmpl-chip" onclick="addTemplate(${i})">${t.cat==='工作'?'💼':t.cat==='学习'?'📚':t.cat==='生活'?'🏠':t.cat==='理财'?'💰':t.cat==='健康'?'🩺':'🌱'} ${t.name}</span>`).join('');
+}
+function addTemplate(i){
+  const t=TASK_TMPLS[i];
+  if(db.tasks.some(x=>x.name===t.name&&x.status!=='done')){toast('已有类似待办任务');return}
+  db.tasks.push({id:uid(),name:t.name,priority:t.priority,cat:t.cat,due:t.due,status:'todo',note:'',finishDate:null});
+  save();renderList();renderDash();renderBoard();toast('已添加：'+t.name);
+}
+function addAllTemplates(){
+  if(!confirm('将全部模板添加为待办任务（已有重复跳过）？'))return;
+  let n=0;
+  TASK_TMPLS.forEach(t=>{if(db.tasks.some(x=>x.name===t.name&&x.status!=='done'))return;db.tasks.push({id:uid(),name:t.name,priority:t.priority,cat:t.cat,due:t.due,status:'todo',note:'',finishDate:null});n++});
+  save();renderList();renderDash();renderBoard();toast('已添加 '+n+' 个任务');
+}
 renderDash();
 </script>
 </body>
