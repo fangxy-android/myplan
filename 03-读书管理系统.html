@@ -120,6 +120,88 @@ body.dark .reader{background:#161d26}
 body.dark .reader-bar{border-color:#273242}
 body.dark .reader-bar b{color:#e6ecf3}
 body.dark .reader-body{background:#141a22;color:#c9d4e0}
+/* ================= 小说阅读：多源搜索 + 沉浸式阅读器 ================= */
+.nl-srcbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;color:#9aa5b1}
+.nl-srcbar .nl-src{padding:2px 9px;border-radius:20px;background:#f1f3f6;color:#7f8c9b;font-size:11px}
+.nl-srcbar .nl-src.ok{background:#e8f8f5;color:#16a085}
+.nl-srcbar .nl-src.err{background:#fdecea;color:#c0392b}
+.nl-srcbar .nl-src.busy{background:#fef9e7;color:#b7950b}
+.nl-card{background:#fff;border:1px solid #eef1f5;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:6px;transition:.2s}
+.nl-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.1);transform:translateY(-2px)}
+.nl-card .nc-top{display:flex;gap:10px}
+.nl-card .nc-cv{width:52px;height:70px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;flex-shrink:0;background:linear-gradient(150deg,#8e44ad,#6c3483)}
+.nl-card .nc-info{flex:1;min-width:0}
+.nl-card .nc-name{font-size:14px;font-weight:700;color:#2c3e50;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nl-card .nc-auth{font-size:12px;color:#7f8c9b;margin-top:2px}
+.nl-card .nc-meta{font-size:11px;color:#b0b8c4;display:flex;gap:6px;flex-wrap:wrap}
+.nl-card .nc-desc{font-size:12px;color:#5d6d7e;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nl-card .nc-actions{display:flex;gap:6px;margin-top:auto}
+.nl-tag{display:inline-block;padding:1px 8px;border-radius:12px;font-size:10px;background:#eaf2fb;color:#2980b9}
+.nl-local-item{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.nl-local-item .li-info{flex:1;min-width:0}
+.nl-local-item .li-name{font-size:14px;font-weight:700;color:#2c3e50}
+.nl-local-item .li-sub{font-size:12px;color:#9aa5b1;margin-top:2px}
+body.dark .nl-card{background:#1a222c;border-color:#273242}
+body.dark .nl-card .nc-name{color:#e6ecf3}
+body.dark .nl-card .nc-desc{color:#9aa7b8}
+body.dark .nl-srcbar .nl-src{background:#27333f;color:#9aa7b8}
+body.dark .nl-local-item{background:#1a222c}
+/* ---- 沉浸式阅读器 ---- */
+.nr-overlay{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;background:#fffdf8;color:#1a1a1a}
+.nr-overlay[data-bg="sepia"]{background:#f5ecd9;color:#5b4636}
+.nr-overlay[data-bg="green"]{background:#dcefe0;color:#3e4a3d}
+.nr-overlay[data-bg="dark"]{background:#17171a;color:#b8b8b8}
+.nr-overlay[data-bg="blue"]{background:#1c2735;color:#c8d3e0}
+.nr-top{display:flex;align-items:center;gap:4px;padding:0 10px;height:48px;border-bottom:1px solid rgba(128,128,128,.18);flex-shrink:0}
+.nr-overlay[data-bg="dark"] .nr-top,.nr-overlay[data-bg="blue"] .nr-top{border-bottom-color:rgba(255,255,255,.12)}
+.nr-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600;padding:0 8px}
+.nr-btn{border:none;background:transparent;cursor:pointer;padding:6px 9px;border-radius:8px;font-size:13px;opacity:.72;color:inherit;white-space:nowrap}
+.nr-btn:hover{opacity:1;background:rgba(128,128,128,.14)}
+.nr-wrap{flex:1;display:flex;overflow:hidden;position:relative;min-height:0}
+.nr-body{flex:1;overflow-y:auto;padding:28px 22px 80px;white-space:pre-wrap;word-break:break-word;line-height:1.9;font-size:17px;outline:none;transition:background .2s}
+.nr-body .nr-ct{font-size:1.18em;font-weight:700;text-align:center;margin:8px 0 1.6em;line-height:1.6}
+.nr-zone{position:absolute;top:48px;bottom:44px;width:18%;cursor:pointer;z-index:6;opacity:0}
+.nr-zone.prev{left:0}.nr-zone.next{right:0}
+.nr-bottom{display:flex;align-items:center;gap:8px;padding:0 12px;height:44px;border-top:1px solid rgba(128,128,128,.18);flex-shrink:0;font-size:12px}
+.nr-overlay[data-bg="dark"] .nr-bottom,.nr-overlay[data-bg="blue"] .nr-bottom{border-top-color:rgba(255,255,255,.12)}
+.nr-bottom input[type=range]{flex:1;accent-color:#8e44ad}
+.nr-bottom .nr-pos{min-width:76px;text-align:center;opacity:.75}
+.nr-drawer{position:fixed;top:48px;bottom:0;width:min(330px,88vw);background:#fff;box-shadow:-6px 0 24px rgba(0,0,0,.18);z-index:310;display:flex;flex-direction:column;transition:transform .22s ease;right:0}
+.nr-drawer.left{right:auto;left:0;box-shadow:6px 0 24px rgba(0,0,0,.18)}
+.nr-drawer.hide{transform:translateX(106%)}
+.nr-drawer.left.hide{transform:translateX(-106%)}
+.nr-drawer>h4{padding:13px 16px;border-bottom:1px solid #eef1f5;font-size:14px;color:#34495e;flex-shrink:0;display:flex;justify-content:space-between;align-items:center}
+.nr-drawer>h4 .x{cursor:pointer;opacity:.5;font-weight:400}
+.nr-dlist{flex:1;overflow-y:auto;padding:8px}
+.nr-ditem{padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;line-height:1.5;color:#34495e}
+.nr-ditem:hover{background:#f4f6f9}
+.nr-ditem.cur{background:#f4ecfb;color:#8e44ad;font-weight:600}
+.nr-ditem .mk-sub{font-size:11px;color:#9aa5b1;margin-top:2px}
+.nr-ditem .mk-del{float:right;opacity:.45;font-size:12px}
+.nr-ditem .mk-del:hover{opacity:1;color:#c0392b}
+.nr-set{padding:12px 16px;border-bottom:1px solid #f1f4f8}
+.nr-set label{font-size:12px;color:#7f8c9b;display:block;margin-bottom:7px}
+.nr-set input[type=range]{width:100%;accent-color:#8e44ad}
+.nr-set select{width:100%;padding:7px 10px;border:1px solid #dde3ea;border-radius:8px;font-size:13px;outline:none}
+.nr-colors{display:flex;gap:8px;flex-wrap:wrap}
+.nr-color{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:13px}
+.nr-color.cur{box-shadow:0 0 0 2px #fff,0 0 0 4px #8e44ad}
+.nr-bg{width:56px;height:44px;border-radius:10px;cursor:pointer;border:2px solid rgba(0,0,0,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;gap:2px}
+.nr-bg.cur{box-shadow:0 0 0 2px #fff,0 0 0 4px #8e44ad}
+.nr-bg i{width:26px;height:4px;border-radius:2px;background:rgba(0,0,0,.25)}
+.nr-loading{padding:60px 0;text-align:center;color:#9aa5b1;font-size:13px}
+.nr-loading .spin{display:inline-block;width:26px;height:26px;border:3px solid #eef1f5;border-top-color:#8e44ad;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nr-end{text-align:center;color:#9aa5b1;font-size:13px;padding:26px 0 10px}
+.nr-addmark{position:fixed;right:14px;bottom:56px;z-index:305;width:42px;height:42px;border-radius:50%;border:none;background:#8e44ad;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.nr-addmark:hover{transform:scale(1.08)}
+body.dark .nr-drawer{background:#1a222c}
+body.dark .nr-drawer>h4{border-bottom-color:#273242;color:#d5dce5}
+body.dark .nr-ditem{color:#c9d4e0}
+body.dark .nr-ditem:hover{background:#222d39}
+body.dark .nr-set{border-bottom-color:#202b37}
+body.dark .nr-set label{color:#9aa7b8}
+body.dark .nr-set select{background:#151c25;border-color:#2a3644;color:#d5dce5}
 </style>
 </head>
 <body>
@@ -140,6 +222,7 @@ body.dark .reader-body{background:#141a22;color:#c9d4e0}
   <button data-tab="reading" onclick="switchTab('reading')">阅读打卡</button>
   <button data-tab="notes" onclick="switchTab('notes')">读书笔记</button>
   <button data-tab="stats" onclick="switchTab('stats')">年度统计</button>
+  <button data-tab="novel" onclick="switchTab('novel')">📖 小说阅读</button>
   <button data-tab="store" onclick="switchTab('store')">📚 在线书城</button>
 </nav>
 <main>
@@ -181,6 +264,25 @@ body.dark .reader-body{background:#141a22;color:#c9d4e0}
       <div class="panel"><h3>每月读完数量</h3><canvas id="chartBarDone"></canvas></div>
     </div>
     <div class="panel"><h3>年度书籍清单（已读完）</h3><div id="yearBooks"></div></div>
+  </section>
+  <section id="tab-novel" class="tabpane">
+    <div class="panel">
+      <h3>📖 全网小说搜索<span class="nl-srcbar" id="srcBar"></span></h3>
+      <div class="store-search">
+        <input type="text" id="nlQuery" placeholder="输入小说名或作者，如：斗破苍穹、诡秘之主、大奉打更人…" onkeydown="if(event.key==='Enter')novelSearch()">
+        <button class="btn" onclick="novelSearch()">🔍 全网搜索</button>
+        <button class="btn ghost" onclick="novelHot()">🔥 热门推荐</button>
+        <button class="btn ghost" onclick="openSrcMgr()">📡 源管理</button>
+        <span style="font-size:12px;color:#9aa5b1">内置 30+ 精品书源 · 多源并发自动换源</span>
+      </div>
+      <div id="nlLoading" style="font-size:13px;color:#9aa5b1;margin-bottom:10px"></div>
+      <div id="nlList" class="store-grid"></div>
+    </div>
+    <div class="panel">
+      <h3>📁 本地小说（TXT 导入，离线可读）<button class="btn sm" onclick="document.getElementById('nlFile').click()">⬆ 导入 TXT</button></h3>
+      <input type="file" id="nlFile" accept=".txt,.text,.utf8" class="hidden" onchange="importTxtBook(this)">
+      <div id="nlLocal"></div>
+    </div>
   </section>
   <section id="tab-store" class="tabpane">
     <div class="panel">
@@ -260,6 +362,45 @@ body.dark .reader-body{background:#141a22;color:#c9d4e0}
   </div>
 </div>
 
+<div id="novelReader" class="nr-overlay hidden">
+  <div class="nr-top">
+    <button class="nr-btn" onclick="closeNovelReader()">✕ 返回</button>
+    <div class="nr-title" id="nrTitle">书名 · 章节</div>
+    <button class="nr-btn" onclick="toggleDrawer('toc')">📑 目录</button>
+    <button class="nr-btn" onclick="toggleDrawer('mark')">🔖 书签</button>
+    <button class="nr-btn" onclick="toggleDrawer('set')">⚙️ 设置</button>
+    <button class="nr-btn" onclick="nrToggleTheme()">🌙</button>
+  </div>
+  <div class="nr-wrap">
+    <div class="nr-zone prev" onclick="nrPrevPage()" title="上一页(←)"></div>
+    <div id="nrBody" class="nr-body" tabindex="0"></div>
+    <div class="nr-zone next" onclick="nrNextPage()" title="下一页(→)"></div>
+  </div>
+  <div class="nr-bottom">
+    <button class="nr-btn" onclick="nrGoChapter(-1)">◀ 上一章</button>
+    <span class="nr-pos" id="nrPos">—</span>
+    <input type="range" id="nrSlider" min="0" max="1000" value="0" oninput="nrSeek()">
+    <button class="nr-btn" onclick="nrGoChapter(1)">下一章 ▶</button>
+  </div>
+  <button class="nr-addmark" onclick="nrAddMark()" title="添加书签">🔖</button>
+  <div class="nr-drawer left hide" id="drToc"><h4>📑 目录 <span class="x" onclick="toggleDrawer('toc')">✕</span></h4><div class="nr-dlist" id="drTocList"></div></div>
+  <div class="nr-drawer hide" id="drMark"><h4>🔖 书签 <span class="x" onclick="toggleDrawer('mark')">✕</span></h4><div class="nr-dlist" id="drMarkList"></div></div>
+  <div class="nr-drawer hide" id="drSet">
+    <h4>⚙️ 阅读设置 <span class="x" onclick="toggleDrawer('set')">✕</span></h4>
+    <div class="nr-dlist">
+      <div class="nr-set"><label>字号：<b id="lbSize">17px</b></label><input type="range" min="12" max="34" value="17" id="setSize" oninput="nrApply()"></div>
+      <div class="nr-set"><label>行距：<b id="lbLine">1.9</b></label><input type="range" min="12" max="30" value="19" id="setLine" oninput="nrApply()"></div>
+      <div class="nr-set"><label>字间距：<b id="lbLetter">0.5px</b></label><input type="range" min="0" max="12" value="0.5" step="0.5" id="setLetter" oninput="nrApply()"></div>
+      <div class="nr-set"><label>页宽：<b id="lbWidth">82%</b></label><input type="range" min="55" max="100" value="82" id="setWidth" oninput="nrApply()"></div>
+      <div class="nr-set"><label>正文字体</label><select id="setFont" onchange="nrApply()">
+        <option value="system">系统默认</option><option value="serif">宋体 / 衬线</option><option value="kaiti">楷体</option>
+        <option value="heiti">黑体</option><option value="fangsong">仿宋</option><option value="mono">等宽</option></select></div>
+      <div class="nr-set"><label>字体颜色</label><div class="nr-colors" id="setFColor"></div></div>
+      <div class="nr-set"><label>背景主题</label><div class="nr-colors" id="setBg"></div></div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <script>
 const KEY='reading_sys_v1';
@@ -310,6 +451,7 @@ function switchTab(name){
   if(name==='notes')renderNotes();
   if(name==='stats')renderStats();
   if(name==='store'){renderStore()}
+  if(name==='novel'){renderNovelLocal();renderSrcBar()}
 }
 function closeModal(id){document.getElementById(id).classList.add('hidden')}
 
@@ -369,6 +511,7 @@ function renderShelf(){
         <div class="auth">${esc(b.author)||'佚名'} · ${b.cat}</div>
         <div class="meta"><span class="tag ${stCls}">${stText}</span>${b.pages?'<span>'+b.pages+'页</span>':''}<span class="stars" onclick="event.stopPropagation()">${stars}</span></div>
         <div class="progress"><div style="width:${prog}%"></div></div>
+        ${b.novel?`<div style="margin-top:7px;display:flex;gap:6px"><button class="btn sm" style="padding:3px 12px" onclick="event.stopPropagation();openShelfNovel('${b.id}')">▶ 阅读</button></div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -664,7 +807,537 @@ function renderReaderPage(){
 }
 function readerFontUp(){readerFont=Math.min(28,readerFont+2);renderReaderPage()}
 function readerFontDown(){readerFont=Math.max(12,readerFont-2);renderReaderPage()}
+
+/* ================= 小说阅读 · 书源引擎 ================= */
+const NL_LS={local:'nl_local',marks:'nl_marks',prefs:'nl_prefs',prog:'nl_progress'};
+const BQG_TOC='dd a,#list a,#list dd a,.listmain dd a,.chapter-list a,#chapterlist a,.book-list a,.volume a';
+const BQG_CONTENT='#content,#chaptercontent,.content,#inner,.read-content,#booktxt,.showtxt,.chapter-content,#htmlContent';
+function mkSrc(id,name,host,alive,opts){return Object.assign({id,name,host,alive,search:'/search.php?q={q}',charset:'utf-8',tocSel:BQG_TOC,contentSel:BQG_CONTENT,enabled:alive>=1},opts||{})}
+const NOVEL_SOURCES=[
+  /* —— 实测可用（2026-08 验证） —— */
+  mkSrc('bxwx9','笔下文学','www.bxwx9.org',2),
+  mkSrc('bq365','笔趣阁365','www.biquge365.net',2,{search:'/?s={q}'}),
+  mkSrc('xsw','小说天堂','www.xsw.tw',2,{search:'/modules/article/search.php?searchkey={q}',charset:'big5',contentSel:'#htmlContent,#content,.read-content'}),
+  /* —— 站点存活、搜索路径待验证 —— */
+  mkSrc('bq345','笔趣阁345','www.biquge345.com',1,{search:'/?s={q}'}),
+  mkSrc('bigee','笔趣阁Bigee','www.bigee.cc',1),
+  mkSrc('bqgui','笔趣阁GUI','www.bqgui.cc',1),
+  mkSrc('yruan','新笔趣阁','www.yruan.com',1),
+  /* —— 历史经典书源（域名可能已失效，可在源管理中启用/编辑） —— */
+  mkSrc('bqg128','笔趣阁128','www.bqg128.com',0),
+  mkSrc('biquge','笔趣阁co','www.biquge.co',0),
+  mkSrc('xbiquge','笔趣阁la','www.xbiquge.la',0),
+  mkSrc('ibiquges','笔趣阁es','www.ibiquges.com',0),
+  mkSrc('bq5200','笔趣阁5200','www.biqu5200.net',0),
+  mkSrc('bq9527','笔趣阁9527','www.bqg9527.com',0),
+  mkSrc('bq567','笔趣阁567','www.bqg567.com',0),
+  mkSrc('bq64','笔趣阁64','www.bqg64.com',0),
+  mkSrc('bq8','笔趣阁8','www.bqg8.cc',0),
+  mkSrc('bq90','笔趣阁90','www.bqg90.com',0),
+  mkSrc('bqxs520','笔趣阁520','www.bqxs520.com',0),
+  mkSrc('tingshu','听书小说','www.tingshuxs.com',0),
+  mkSrc('x81zw','八一中文','www.x81zw.co',0),
+  mkSrc('23us','顶点小说','www.23us.com',0),
+  mkSrc('shuquge','书趣阁','www.shuquge.com',0,{search:'/modules/article/search.php?searchkey={q}'}),
+  mkSrc('qula','去啦小说网','www.qu-la.com',0),
+  mkSrc('hetushu','合图小说','www.hetushu.com',0,{search:'/search?key={q}'}),
+  mkSrc('7kzw','七天文学','www.7kzw.com',0),
+  mkSrc('wfxs','微风小说','www.wfxs.net',0),
+  mkSrc('bswtan','半山书斋','www.bswtan.com',0),
+  mkSrc('wenxuemi','文学迷','www.wenxuemi.com',0),
+  mkSrc('56bok','56书库','www.56bok.com',0),
+  mkSrc('ranwen','燃文小说','www.ranwen1.com',0),
+  mkSrc('bq2020','笔趣阁2020','www.bqg2020.com',0),
+  mkSrc('35xs','三五小说网','www.35xs.com',0),
+  mkSrc('shuqugeorg','书趣阁org','www.shuquge.org',0,{search:'/search?q={q}'}),
+  mkSrc('69shuba','69书吧','www.69shuba.com',0,{search:'/search.php?q={q}',contentSel:'#content,.content,.txtnav'}),
+];
+const NOVEL_PROXIES=[
+  {id:'allorigins-raw',tpl:'https://api.allorigins.win/raw?url={u}'},
+  {id:'allorigins-get',tpl:'https://api.allorigins.win/get?url={u}',json:true},
+  {id:'codetabs',tpl:'https://api.codetabs.com/v1/proxy?quest={u}'},
+  {id:'corsproxy',tpl:'https://corsproxy.io/?url={u}'},
+  {id:'corslol',tpl:'https://api.cors.lol/?url={u}'},
+];
+const NL_HOT=['斗破苍穹','诡秘之主','大奉打更人','赘婿','凡人修仙传','庆余年','雪中悍刀行','盗墓笔记','三体','遮天','完美世界','牧神记'];
+function nlSrc(id){return NOVEL_SOURCES.find(s=>s.id===id)}
+function fetchT(url,ms){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms||9000);return fetch(url,{signal:c.signal,headers:{Referer:new URL(url).origin+'/'}}).finally(()=>clearTimeout(t))}
+function decodeBuf(buf,charset){try{return new TextDecoder(charset||'utf-8').decode(buf)}catch(e){return new TextDecoder('utf-8').decode(buf)}}
+async function novelFetch(url,charset,ms){
+  for(let attempt=0;attempt<2;attempt++){
+    try{const r=await fetchT(url,ms||9000);if(r.ok)return decodeBuf(await r.arrayBuffer(),charset)}catch(e){}
+    for(const p of NOVEL_PROXIES){
+      try{const r=await fetchT(p.tpl.replace('{u}',encodeURIComponent(url)),ms||9000);
+        if(r.ok){const buf=await r.arrayBuffer();
+          if(p.json){const j=JSON.parse(decodeBuf(buf,'utf-8'));if(j&&j.contents)return j.contents}
+          return decodeBuf(buf,charset)}}
+      catch(e){}
+    }
+  }
+  throw new Error('通道失败');
+}
+function cleanTxt(s){return String(s==null?'':s).replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&ldquo;/g,'“').replace(/&rdquo;/g,'”').replace(/&mdash;/g,'—').replace(/&hellip;/g,'…').trim()}
+function absUrl(h,base){if(/^https?:/i.test(h))return h;try{return new URL(h,base).href}catch(e){return base}}
+/* ---- 搜索解析 ---- */
+function parseSearch(html,src){
+  const items=[],seen=new Set();
+  const re=/<a[^>]+href=["']([^"']+)["'][^>]*>([^<]{2,42})<\/a>/g;let m;
+  while((m=re.exec(html))){
+    const href=m[1].trim(),text=cleanTxt(m[2]);
+    if(text.length<2||text.length>40)continue;
+    if(!/(book|books?|chapter|b\/|\/b[0-9]|\/b\/)/i.test(href))continue;
+    if(/首页|分类|排行|书架|登录|注册|加入书|开始阅读|直达|返回|上一页|下一页|推荐|玄幻|都市|科幻|历史|网游|武侠/.test(text)&&!/(第.{1,8}[章节])/.test(text))continue;
+    if(seen.has(text))continue;seen.add(text);
+    const bm=href.match(/chapter\/(\d+)\//);
+    let tocUrl=bm?('https://'+src.host+'/book/'+bm[1]+'/'):absUrl(href,'https://'+src.host+'/');
+    items.push({title:text,url:tocUrl,src:src.id,chapUrl:bm?absUrl(href,'https://'+src.host+'/'):''});
+    if(items.length>=20)break;
+  }
+  if(!items.length){ /* 兜底：任意含"第x章"的链接当结果 */
+    const re2=/<a[^>]+href=["']([^"']+)["'][^>]*>([^<]{2,50})<\/a>/g;
+    while((m=re2.exec(html))){
+      const text=cleanTxt(m[2]);
+      if(!/第.{1,10}[章节卷]/.test(text))continue;
+      const href=m[1].trim();
+      items.push({title:text.slice(0,20),url:absUrl(href,'https://'+src.host+'/'),src:src.id});
+      if(items.length>=10)break;
+    }
+  }
+  const am=html.match(/作者[:：]\s*([^<\s,，。]{2,14})/);
+  items.forEach(it=>it.author=am?am[1]:'');
+  return items;
+}
+/* ---- 目录/正文解析 ---- */
+function parseToc(html,src,baseUrl){
+  const chaps=[],seen=new Set();
+  const re=/<a[^>]+href=["']([^"']+)["'][^>]*>([^<]{1,60})<\/a>/g;let m;
+  while((m=re.exec(html))){
+    const text=cleanTxt(m[2]);
+    if(text.length<1||text.length>60)continue;
+    if(!/第[零一二三四五六七八九十百千万0-9０-９〇两]{1,12}[章节卷回部集篇]/.test(text)&&!/^(序章|楔子|引子|前言|后记|尾声|终章|番外)/.test(text))continue;
+    if(seen.has(text))continue;seen.add(text);
+    chaps.push({t:text,u:absUrl(m[1].trim(),baseUrl)});
+    if(chaps.length>=2000)break;
+  }
+  return chaps;
+}
+function parseContent(html,src){
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  let node=null;
+  for(const sel of src.contentSel.split(',')){
+    const el=doc.querySelector(sel.trim());if(el&&el.textContent.trim().length>50){node=el;break}
+  }
+  let txt;
+  if(node)txt=node.innerHTML;
+  else{
+    const blocks=[];
+    doc.querySelectorAll('div,p,article').forEach(el=>{const t=el.textContent.trim();if(t.length>80)blocks.push([t.length,t])});
+    blocks.sort((a,b)=>b[0]-a[0]);
+    txt=blocks.length?blocks[0][1]:(doc.body?doc.body.textContent:'');
+  }
+  txt=txt.replace(/<br\s*\/?>/gi,'\n').replace(/<p[^>]*>/gi,'\n').replace(/<\/p>/gi,'\n')
+    .replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<!--[\s\S]*?-->/g,'')
+    .replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&ldquo;/g,'“').replace(/&rdquo;/g,'”');
+  return txt.split('\n').map(s=>s.replace(/\s+/g,' ').trim())
+    .filter(s=>s&&!/^(请收藏|章节错误|最快更新|天才一秒|本站新域名|加入书签|推荐票|月票|最新章节|手机用户|一秒记住|顶点小说|笔趣阁手机版|www\.|error|function\s*\(|var\s+\w+=)/.test(s)).join('\n');
+}
+/* ---- 搜索流程 ---- */
+let nlResults=[],nlBusy=false;
+function renderSrcBar(){
+  const el=document.getElementById('srcBar');
+  el.innerHTML=NOVEL_SOURCES.filter(s=>s.enabled).map(s=>`<span class="nl-src" id="srcTag-${s.id}">${s.name}</span>`).join('')
+    +`<span style="opacity:.7">共 ${NOVEL_SOURCES.filter(s=>s.enabled).length} 源</span>`;
+}
+function setSrcTag(id,st){
+  const el=document.getElementById('srcTag-'+id);if(!el)return;
+  el.className='nl-src '+(st||'');
+  if(st==='ok')el.textContent=nlSrc(id).name+' ✓';
+  else if(st==='err')el.textContent=nlSrc(id).name+' ✗';
+}
+async function novelSearch(){
+  if(nlBusy)return;
+  const q=document.getElementById('nlQuery').value.trim();
+  if(!q){toast('请输入书名或作者');return}
+  nlBusy=true;
+  const loading=document.getElementById('nlLoading');
+  const list=NOVEL_SOURCES.filter(s=>s.enabled);
+  loading.innerHTML='<span class="spin" style="display:inline-block;width:14px;height:14px;border:2px solid #eef1f5;border-top-color:#8e44ad;border-radius:50%;animation:spin .8s linear infinite"></span> 正在多源并发搜索「'+esc(q)+'」…';
+  list.forEach(s=>setSrcTag(s.id,'busy'));
+  nlResults=[];
+  const t0=Date.now();
+  const jobs=list.map(async s=>{
+    try{
+      const url='https://'+s.host+s.search.replace('{q}',encodeURIComponent(q));
+      const html=await novelFetch(url,s.charset,10000);
+      const items=parseSearch(html,s);
+      setSrcTag(s.id,items.length?'ok':'err');
+      return {s,items};
+    }catch(e){setSrcTag(s.id,'err');return {s,items:[]}}
+  });
+  const settled=await Promise.all(jobs);
+  settled.forEach(j=>{j.items.forEach(it=>{if(!nlResults.some(x=>x.title===it.title&&x.src===it.src))nlResults.push(it)})});
+  nlBusy=false;
+  const dur=((Date.now()-t0)/1000).toFixed(1);
+  loading.textContent=nlResults.length?`共找到 ${nlResults.length} 个结果（${dur}s，来自 ${new Set(nlResults.map(r=>r.src)).size} 个源）`:'没有找到结果，可换关键词、换源或导入 TXT';
+  renderNovelResults();
+}
+function renderNovelResults(){
+  const el=document.getElementById('nlList');
+  if(!nlResults.length){el.innerHTML='<div class="empty" style="grid-column:1/-1">搜索全网小说，或点击「热门推荐」试试</div>';return}
+  const colors=['#8e44ad','#2980b9','#16a085','#e67e22','#c0392b','#34495e','#27ae60','#d35400'];
+  el.innerHTML=nlResults.map((r,i)=>{
+    const s=nlSrc(r.src)||{name:r.src};
+    return `<div class="nl-card">
+      <div class="nc-top">
+        <div class="nc-cv" style="background:linear-gradient(150deg,${colors[i%colors.length]},${colors[(i+2)%colors.length]})">📕</div>
+        <div class="nc-info">
+          <div class="nc-name">${esc(r.title)}</div>
+          <div class="nc-auth">${esc(r.author)||'作者未知'}</div>
+          <div class="nc-meta"><span class="nl-tag">${esc(s.name)}</span></div>
+        </div>
+      </div>
+      <div class="nc-actions">
+        <button class="btn sm" onclick="openNovel(${i})">📖 开始阅读</button>
+        <button class="btn sm ghost" onclick="addNovelToShelf(${i})">📥 加入书架</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function novelHot(){document.getElementById('nlQuery').value=NL_HOT[Math.floor(Math.random()*NL_HOT.length)];novelSearch()}
+function addNovelToShelf(i){
+  const r=nlResults[i];if(!r)return;
+  if(db.books.some(b=>b.name===r.title)){toast('这本书已在书架中');return}
+  db.books.push({id:uid(),name:r.title,author:r.author||'网络小说',cat:'小说',status:'reading',progress:0,color:coverColors[db.books.length%coverColors.length],pages:'',novel:r});
+  save();renderShelf();toast('已加入书架 ✓');
+}
+/* ---- 源管理 ---- */
+function openSrcMgr(){
+  const old=document.getElementById('srcMgrModal');
+  if(old)old.remove();
+  const d=document.createElement('div');d.id='srcMgrModal';d.className='modal-overlay';d.style.zIndex=250;
+  d.innerHTML=`<div class="modal wide">
+    <h3>📡 小说源管理<button class="btn sm ghost" style="float:right" onclick="this.closest('.modal-overlay').remove()">✕</button></h3>
+    <div style="font-size:12px;color:#9aa5b1;margin-bottom:10px">绿色=实测可用 · 蓝色=待验证 · 灰色=历史源（可启用测试）。点击开关启用/停用，点击测试验证连通。</div>
+    <div style="max-height:56vh;overflow:auto">
+    <table><tr><th>启用</th><th>书源</th><th>域名</th><th>状态</th><th>操作</th></tr>
+    ${NOVEL_SOURCES.map((s,i)=>`<tr>
+      <td><input type="checkbox" ${s.enabled?'checked':''} onchange="toggleSrc(${i},this.checked)"></td>
+      <td>${esc(s.name)}</td><td style="color:#7f8c9b">${esc(s.host)}</td>
+      <td>${s.alive>=2?'<span style="color:#16a085">✓ 实测可用</span>':s.alive===1?'<span style="color:#2980b9">待验证</span>':'<span style="color:#b0b8c4">历史源</span>'}</td>
+      <td><button class="btn sm ghost" onclick="testSrc(${i},this)">测试</button></td>
+    </tr>`).join('')}
+    </table></div>
+    <div style="font-size:11px;color:#9aa5b1;margin-top:10px">提示：源为公开站点，随时可能失效；建议优先使用「实测可用」源。也可导入本地 TXT 离线阅读。</div>
+  </div>`;
+  document.body.appendChild(d);
+}
+function toggleSrc(i,on){NOVEL_SOURCES[i].enabled=on;renderSrcBar();toast(on?'已启用 '+NOVEL_SOURCES[i].name:'已停用 '+NOVEL_SOURCES[i].name)}
+async function testSrc(i,btn){
+  const s=NOVEL_SOURCES[i];
+  btn.disabled=true;btn.textContent='测试中…';
+  try{
+    const url='https://'+s.host+s.search.replace('{q}',encodeURIComponent('测试'));
+    const html=await novelFetch(url,s.charset,12000);
+    const items=parseSearch(html,s);
+    s.alive=items.length?2:1;s.enabled=items.length>0;
+    btn.textContent='✓ 可用('+items.length+')';btn.style.color='#16a085';
+    toast(s.name+(items.length?' 可用':' 存活但无结果'));
+  }catch(e){s.alive=0;btn.textContent='✗ 失败';btn.style.color='#c0392b';toast(s.name+' 连接失败')}
+  renderSrcBar();
+}
+/* ---- 本地 TXT ---- */
+function splitChapters(text,name){
+  text=text.replace(/\r/g,'').replace(/^\uFEFF/,'');
+  const re=/^\s*(第[零一二三四五六七八九十百千万0-9０-９〇两]+[章节卷回部集篇][^\n]{0,40}|序章|楔子|引子|前言|后记|尾声|终章|番外[^\n]{0,20})\s*$/gm;
+  const idx=[];let m;
+  while((m=re.exec(text)))idx.push({i:m.index,t:m[0].trim()});
+  if(!idx.length){const c=text.trim();return c?[{t:'全文',c}]:[]}
+  const chaps=[];
+  for(let k=0;k<idx.length;k++){
+    const start=idx[k].i,end=k<idx.length-1?idx[k+1].i:text.length;
+    const body=text.slice(start,end).trim();
+    if(body)chaps.push({t:idx[k].t,c:body});
+  }
+  return chaps;
+}
+function importTxtBook(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let text;
+    try{text=new TextDecoder('utf-8').decode(r.result)}catch(e){}
+    const bad=(text.match(/\uFFFD/g)||[]).length;
+    if(!/[\u4e00-\u9fa5]/.test(text.slice(0,300))||bad>text.length*0.02){
+      try{text=new TextDecoder('gb18030').decode(r.result)}catch(e){}
+    }
+    const chaps=splitChapters(text,f.name);
+    if(!chaps.length){toast('无法识别章节，文件可能为空');return}
+    const book={id:uid(),name:f.name.replace(/\.(txt|text|utf8)$/i,''),author:'本地导入',local:true,chapters:chaps,time:Date.now()};
+    try{
+      const all=JSON.parse(localStorage.getItem(NL_LS.local)||'[]');
+      all.unshift(book);
+      localStorage.setItem(NL_LS.local,JSON.stringify(all));
+      renderNovelLocal();toast('导入成功：'+book.name+'（'+chaps.length+' 章）');
+    }catch(e){toast('存储空间不足：建议每本 TXT 控制在 2MB 以内')}
+  };
+  r.readAsArrayBuffer(f);input.value='';
+}
+function renderNovelLocal(){
+  const el=document.getElementById('nlLocal');
+  const all=JSON.parse(localStorage.getItem(NL_LS.local)||'[]');
+  if(!all.length){el.innerHTML='<div class="empty">暂无本地小说，点击「导入 TXT」添加（自动识别 UTF-8/GBK，按章节切分）</div>';return}
+  el.innerHTML=all.map(b=>`<div class="nl-local-item">
+    <div class="nc-cv" style="width:42px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0;background:linear-gradient(150deg,#16a085,#0e6655)">📘</div>
+    <div class="li-info">
+      <div class="li-name">${esc(b.name)}</div>
+      <div class="li-sub">${b.chapters.length} 章 · ${new Date(b.time).toLocaleDateString()}</div>
+    </div>
+    <button class="btn sm" onclick="openLocalNovel('${b.id}')">阅读</button>
+    <button class="btn sm ghost" onclick="addLocalToShelf('${b.id}')">书架</button>
+    <button class="btn sm danger" onclick="delLocalNovel('${b.id}')">删</button>
+  </div>`).join('');
+}
+function delLocalNovel(id){
+  if(!confirm('删除这本本地小说？'))return;
+  const all=JSON.parse(localStorage.getItem(NL_LS.local)||'[]').filter(b=>b.id!==id);
+  localStorage.setItem(NL_LS.local,JSON.stringify(all));renderNovelLocal();toast('已删除');
+}
+function addLocalToShelf(id){
+  const b=JSON.parse(localStorage.getItem(NL_LS.local)||'[]').find(x=>x.id===id);if(!b)return;
+  if(db.books.some(x=>x.name===b.name)){toast('这本书已在书架中');return}
+  db.books.push({id:uid(),name:b.name,author:b.author||'本地导入',cat:'小说',status:'reading',progress:0,color:coverColors[db.books.length%coverColors.length],pages:'',novel:{local:true,id:b.id}});
+  save();renderShelf();toast('已加入书架 ✓');
+}
 renderDash();
+/* ================= 小说阅读 · 沉浸式阅读器 ================= */
+const NR_PREFS_DEFAULT={size:17,line:19,letter:0.5,width:82,font:'system',fg:'#1a1a1a',bg:'paper',align:'justify'};
+const FG_COLORS=['#1a1a1a','#333333','#5b4636','#3e4a3d','#2c3e50','#7f8c8d','#b8b8b8','#f2f2f2'];
+const BG_THEMES=[
+  {id:'paper',name:'纸白',bg:'#fffdf8',fg:'#1a1a1a'},
+  {id:'sepia',name:'米黄',bg:'#f5ecd9',fg:'#5b4636'},
+  {id:'green',name:'护眼绿',bg:'#dcefe0',fg:'#3e4a3d'},
+  {id:'dark',name:'夜间',bg:'#17171a',fg:'#b8b8b8'},
+  {id:'blue',name:'深蓝',bg:'#1c2735',fg:'#c8d3e0'},
+];
+let nrPrefs=Object.assign({},NR_PREFS_DEFAULT,JSON.parse(localStorage.getItem(NL_LS.prefs)||'{}'));
+let NR=null;
+const nrBody=()=>document.getElementById('nrBody');
+/* ---- 打开书籍 ---- */
+async function openNovel(i){
+  const r=nlResults[i];if(!r)return;
+  const src=nlSrc(r.src);
+  document.getElementById('novelReader').classList.remove('hidden');
+  NR={title:r.title,src,chapters:[],chapUrl:r.chapUrl||''};
+  document.getElementById('nrTitle').textContent=r.title+' · 目录加载中';
+  showNrLoading('正在获取目录…');
+  try{
+    const html=await novelFetch(r.url,src.charset,12000);
+    NR.chapters=parseToc(html,src,r.url);
+    if(!NR.chapters.length&&NR.chapUrl)NR.chapters=[{t:'第一章',u:NR.chapUrl}];
+    if(!NR.chapters.length)throw 0;
+    const prog=JSON.parse(localStorage.getItem(NL_LS.prog)||'{}')[NR.title]||{bi:0,ratio:0};
+    NR.cur=Math.min(prog.bi||0,NR.chapters.length-1);NR.resumeRatio=prog.ratio||0;NR._restored=false;
+    renderToc();updateNrTitle();await nrLoadChapter(NR.cur);
+  }catch(e){
+    nrBody().innerHTML='<div class="nr-loading">目录加载失败：网络或书源不可用。<br>建议：换一个「实测可用」源重新搜索，或导入 TXT 离线阅读。</div>';
+  }
+}
+function openLocalNovel(id){
+  const b=JSON.parse(localStorage.getItem(NL_LS.local)||'[]').find(x=>x.id===id);if(!b)return;
+  document.getElementById('novelReader').classList.remove('hidden');
+  NR={title:b.name,local:true,chapters:b.chapters.map(c=>({t:c.t,c:c.c})),cur:0,bookId:id};
+  const prog=JSON.parse(localStorage.getItem(NL_LS.prog)||'{}')[b.name]||{bi:0,ratio:0};
+  NR.cur=Math.min(prog.bi||0,b.chapters.length-1);NR.resumeRatio=prog.ratio||0;NR._restored=false;
+  renderToc();updateNrTitle();nrRenderChapter();
+}
+function openShelfNovel(id){
+  const b=db.books.find(x=>x.id===id);if(!b||!b.novel)return;
+  if(b.novel.local){openLocalNovel(b.novel.id);return}
+  const src=nlSrc(b.novel.src);
+  document.getElementById('novelReader').classList.remove('hidden');
+  NR={title:b.name,src,chapters:[],chapUrl:''};
+  document.getElementById('nrTitle').textContent=b.name+' · 目录加载中';
+  showNrLoading('正在获取目录…');
+  (async()=>{
+    try{
+      const html=await novelFetch(b.novel.url,src.charset,12000);
+      NR.chapters=parseToc(html,src,b.novel.url);
+      if(!NR.chapters.length&&b.novel.chapUrl)NR.chapters=[{t:'第一章',u:b.novel.chapUrl}];
+      if(!NR.chapters.length)throw 0;
+      const prog=JSON.parse(localStorage.getItem(NL_LS.prog)||'{}')[b.name]||{bi:0,ratio:0};
+      NR.cur=Math.min(prog.bi||0,NR.chapters.length-1);NR.resumeRatio=prog.ratio||0;NR._restored=false;
+      renderToc();updateNrTitle();await nrLoadChapter(NR.cur);
+    }catch(e){nrBody().innerHTML='<div class="nr-loading">目录加载失败：网络或书源不可用。</div>'}
+  })();
+}
+function closeNovelReader(){saveProgress();document.getElementById('novelReader').classList.add('hidden');NR=null}
+/* ---- 章节加载/渲染 ---- */
+async function nrLoadChapter(idx){
+  if(!NR||idx<0||idx>=NR.chapters.length)return;
+  NR.cur=idx;saveProgress();updateNrTitle();renderToc();
+  const ch=NR.chapters[idx];
+  if(ch.c){nrRenderChapter();return}
+  showNrLoading('正在加载「'+esc(ch.t)+'」…');
+  try{
+    const html=await novelFetch(ch.u,NR.src.charset,12000);
+    ch.c=parseContent(html,NR.src);
+    if(ch.c.trim().length<20)throw 0;
+    nrRenderChapter();
+  }catch(e){
+    nrBody().innerHTML='<div class="nr-loading">本章加载失败（反爬或网络波动）。<br><button class="btn sm" onclick="nrLoadChapter('+NR.cur+')">↻ 重试本章</button> <button class="btn sm ghost" onclick="nrGoChapter(1)">跳到下一章</button></div>';
+  }
+}
+function nrRenderChapter(){
+  const ch=NR.chapters[NR.cur];if(!ch)return;
+  const paras=ch.c.split('\n').filter(s=>s.trim());
+  nrBody().innerHTML='<div class="nr-ct">'+esc(ch.t)+'</div>'+paras.map(p=>'<p class="nr-para">'+esc(p.trim())+'</p>').join('')+'<div class="nr-end">—— 本章完 ——</div>';
+  nrApply();
+  if(NR.resumeRatio>0&&!NR._restored){
+    requestAnimationFrame(()=>{const b=nrBody();b.scrollTop=NR.resumeRatio*(b.scrollHeight-b.clientHeight);NR.resumeRatio=0;NR._restored=true;updatePos()});
+  }
+  updatePos();
+}
+function showNrLoading(msg){nrBody().innerHTML='<div class="nr-loading"><div class="spin"></div>'+msg+'</div>'}
+function updateNrTitle(){document.getElementById('nrTitle').textContent=(NR?NR.title:'')+' · '+((NR&&NR.chapters[NR.cur])?NR.chapters[NR.cur].t:'')}
+/* ---- 翻页 / 进度 ---- */
+function nrNextPage(){const b=nrBody(),h=b.clientHeight*0.85;if(b.scrollTop+h<b.scrollHeight-b.clientHeight-2)b.scrollBy({top:h,behavior:'smooth'});else nrGoChapter(1)}
+function nrPrevPage(){const b=nrBody();if(b.scrollTop>4)b.scrollBy({top:-b.clientHeight*0.85,behavior:'smooth'});else nrGoChapter(-1)}
+function nrGoChapter(d){
+  if(!NR)return;
+  const t=NR.cur+d;
+  if(t<0){toast('已是第一章');return}
+  if(t>=NR.chapters.length){toast('已是最后一章');return}
+  NR._restored=false;nrLoadChapter(t);
+}
+function nrScroll(){
+  if(!NR)return;
+  clearTimeout(NR._st);
+  NR._st=setTimeout(()=>{saveProgress();updatePos()},260);
+}
+function updatePos(){
+  const b=nrBody(),max=b.scrollHeight-b.clientHeight;
+  const ratio=max>0?b.scrollTop/max:0;
+  const slider=document.getElementById('nrSlider');
+  slider.value=Math.round(ratio*1000);
+  document.getElementById('nrPos').textContent=(NR?NR.cur+1:0)+'/'+(NR?NR.chapters.length:0)+'章 · '+Math.round(ratio*100)+'%';
+}
+function saveProgress(){
+  if(!NR||!NR.chapters.length)return;
+  const b=nrBody(),max=b.scrollHeight-b.clientHeight;
+  const ratio=max>0?b.scrollTop/max:0;
+  const all=JSON.parse(localStorage.getItem(NL_LS.prog)||'{}');
+  all[NR.title]={bi:NR.cur,ratio:Math.round(ratio*100)/100,time:Date.now()};
+  try{localStorage.setItem(NL_LS.prog,JSON.stringify(all))}catch(e){}
+}
+function nrSeek(){
+  const b=nrBody(),max=b.scrollHeight-b.clientHeight;
+  b.scrollTop=document.getElementById('nrSlider').value/1000*max;
+  updatePos();
+}
+/* ---- 目录 ---- */
+function renderToc(){
+  const el=document.getElementById('drTocList');
+  if(!NR||!NR.chapters.length){el.innerHTML='<div class="empty">暂无目录</div>';return}
+  const start=Math.max(0,NR.cur-100),end=Math.min(NR.chapters.length,NR.cur+300);
+  el.innerHTML=NR.chapters.slice(start,end).map((c,i)=>{
+    const idx=start+i;
+    return `<div class="nr-ditem ${idx===NR.cur?'cur':''}" onclick="nrJump(${idx})">${esc(c.t)}</div>`;
+  }).join('');
+  const cur=el.querySelector('.cur');if(cur)cur.scrollIntoView({block:'center'});
+}
+function nrJump(idx){toggleDrawer('toc');if(idx===NR.cur)return;NR._restored=false;nrLoadChapter(idx)}
+/* ---- 书签 ---- */
+function nrAddMark(){
+  if(!NR||!NR.chapters.length){toast('请先打开一本书');return}
+  const b=nrBody(),max=b.scrollHeight-b.clientHeight;
+  const ratio=max>0?b.scrollTop/max:0;
+  const marks=JSON.parse(localStorage.getItem(NL_LS.marks)||'{}');
+  if(!marks[NR.title])marks[NR.title]=[];
+  marks[NR.title].push({id:uid(),bi:NR.cur,t:NR.chapters[NR.cur].t,ratio:Math.round(ratio*100)/100,time:Date.now()});
+  try{localStorage.setItem(NL_LS.marks,JSON.stringify(marks))}catch(e){toast('书签保存失败');return}
+  toast('已添加书签 🔖');renderMarks();
+}
+function renderMarks(){
+  const el=document.getElementById('drMarkList');
+  const marks=NR?(JSON.parse(localStorage.getItem(NL_LS.marks)||'{}')[NR.title]||[]):[];
+  if(!marks.length){el.innerHTML='<div class="empty">暂无书签，阅读时点击右下角 🔖 添加</div>';return}
+  el.innerHTML=marks.slice().reverse().map(m=>`<div class="nr-ditem" onclick="gotoMark('${m.id}')">
+    <span class="mk-del" onclick="event.stopPropagation();delMark('${m.id}')">🗑</span>${esc(m.t)}
+    <div class="mk-sub">${Math.round(m.ratio*100)}% · ${new Date(m.time).toLocaleString()}</div></div>`).join('');
+}
+function gotoMark(id){
+  const marks=JSON.parse(localStorage.getItem(NL_LS.marks)||'{}')[NR.title]||[];
+  const m=marks.find(x=>x.id===id);if(!m)return;
+  toggleDrawer('mark');
+  if(m.bi!==NR.cur){NR._restored=false;NR.resumeRatio=m.ratio;nrLoadChapter(m.bi)}
+  else{const b=nrBody();b.scrollTop=m.ratio*(b.scrollHeight-b.clientHeight);updatePos()}
+}
+function delMark(id){
+  const all=JSON.parse(localStorage.getItem(NL_LS.marks)||'{}');
+  all[NR.title]=(all[NR.title]||[]).filter(x=>x.id!==id);
+  localStorage.setItem(NL_LS.marks,JSON.stringify(all));renderMarks();toast('已删除书签');
+}
+/* ---- 抽屉 ---- */
+function toggleDrawer(name){
+  const map={toc:'drToc',mark:'drMark',set:'drSet'};
+  const d=document.getElementById(map[name]);
+  const willHide=d.classList.contains('hide');
+  ['drToc','drMark','drSet'].forEach(id=>document.getElementById(id).classList.add('hide'));
+  if(!willHide){d.classList.remove('hide');if(name==='toc')renderToc();if(name==='mark')renderMarks()}
+}
+/* ---- 阅读设置 ---- */
+function nrApply(){
+  const g=id=>document.getElementById(id);
+  nrPrefs.size=+g('setSize').value;nrPrefs.line=+g('setLine').value/10;nrPrefs.letter=+g('setLetter').value;nrPrefs.width=+g('setWidth').value;nrPrefs.font=g('setFont').value;
+  g('lbSize').textContent=nrPrefs.size+'px';
+  g('lbLine').textContent=nrPrefs.line.toFixed(1);
+  g('lbLetter').textContent=nrPrefs.letter+'px';
+  g('lbWidth').textContent=nrPrefs.width+'%';
+  const body=nrBody();
+  body.style.fontSize=nrPrefs.size+'px';
+  body.style.lineHeight=nrPrefs.line;
+  body.style.letterSpacing=nrPrefs.letter+'px';
+  body.style.maxWidth=nrPrefs.width+'%';
+  body.style.margin='0 auto';
+  const fm={system:"-apple-system,'PingFang SC','Microsoft YaHei',sans-serif",serif:"'Songti SC','SimSun',serif",kaiti:"'Kaiti SC','KaiTi','STKaiti',serif",heiti:"'PingFang SC','Microsoft YaHei','SimHei',sans-serif",fangsong:"'FangSong','STFangsong',serif",mono:"'Courier New',monospace"};
+  body.style.fontFamily=fm[nrPrefs.font]||fm.system;
+  body.style.textAlign=nrPrefs.align;
+  const ov=document.getElementById('novelReader');
+  ov.dataset.bg=nrPrefs.bg;
+  ov.style.color=nrPrefs.fg;
+  ov.style.background=BG_THEMES.find(t=>t.id===nrPrefs.bg).bg;
+  body.style.color=nrPrefs.fg;
+  document.querySelectorAll('#setFColor .nr-color').forEach(el=>el.classList.toggle('cur',el.dataset.c===nrPrefs.fg));
+  document.querySelectorAll('#setBg .nr-bg').forEach(el=>el.classList.toggle('cur',el.dataset.b===nrPrefs.bg));
+  try{localStorage.setItem(NL_LS.prefs,JSON.stringify(nrPrefs))}catch(e){}
+}
+function setFg(c){nrPrefs.fg=c;nrApply()}
+function setBgTheme(b){nrPrefs.bg=b;nrApply()}
+function nrToggleTheme(){
+  if(nrPrefs.bg==='dark'){nrPrefs.bg='paper';nrPrefs.fg='#1a1a1a'}
+  else{nrPrefs.bg='dark';nrPrefs.fg='#b8b8b8'}
+  nrApply();
+}
+function initNrUI(){
+  const g=id=>document.getElementById(id);
+  g('setFColor').innerHTML=FG_COLORS.map(c=>`<div class="nr-color" style="background:${c}" data-c="${c}" onclick="setFg('${c}')"></div>`).join('');
+  g('setBg').innerHTML=BG_THEMES.map(t=>`<div class="nr-bg" style="background:${t.bg}" data-b="${t.id}" onclick="setBgTheme('${t.id}')"><span style="color:${t.fg}">${t.name}</span><i style="background:${t.fg}"></i></div>`).join('');
+  g('setSize').value=nrPrefs.size;g('setLine').value=Math.round(nrPrefs.line*10);g('setLetter').value=nrPrefs.letter;g('setWidth').value=nrPrefs.width;g('setFont').value=nrPrefs.font;
+  nrApply();
+}
+/* ---- 事件绑定 ---- */
+document.addEventListener('keydown',e=>{
+  const ov=document.getElementById('novelReader');
+  if(ov.classList.contains('hidden'))return;
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();nrNextPage()}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();nrPrevPage()}
+  else if(e.key==='Escape'){closeNovelReader()}
+});
+document.getElementById('nrBody').addEventListener('scroll',nrScroll);
+renderSrcBar();
+renderNovelLocal();
+initNrUI();
 </script>
 </body>
 </html>
