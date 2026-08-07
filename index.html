@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的管理系统 · 总览</title>
+<title>我的管理系统 · 100 套件</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6f9;color:#2c3e50;min-height:100vh}
@@ -15,6 +15,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .hero .search{max-width:420px;margin:18px auto 0;position:relative}
 .hero .search input{width:100%;padding:11px 18px;border-radius:24px;border:none;outline:none;font-size:14px;background:rgba(255,255,255,.95);color:#2c3e50;box-shadow:0 4px 14px rgba(0,0,0,.15)}
 .hero .search .cnt{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:12px;color:#9aa5b1}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px auto 0;max-width:720px}
+.chips .chip{padding:5px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;cursor:pointer;transition:.2s}
+.chips .chip:hover{background:rgba(255,255,255,.28)}
+.chips .chip.active{background:#fff;color:#1e3a5f;font-weight:700}
 main{max-width:1120px;margin:-34px auto 60px;padding:0 24px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
 a.card{background:#fff;border-radius:16px;padding:20px;text-decoration:none;color:#2c3e50;box-shadow:0 2px 10px rgba(0,0,0,.06);transition:.25s;display:block;position:relative}
@@ -26,8 +30,10 @@ a.card.hide{display:none}
 .card p{font-size:12.5px;color:#7f8c9b;line-height:1.6}
 .card .bar{height:5px;border-radius:4px;background:#eef1f5;margin-top:14px;overflow:hidden}
 .card .bar>div{height:100%;border-radius:4px}
-.card::after{content:'✅';position:absolute;top:14px;right:14px;font-size:13px}
+.card .ctag{position:absolute;top:14px;right:14px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.card::after{content:''}
 .foot{text-align:center;color:#b0b8c4;font-size:12px;padding-bottom:30px}
+.ctag.财务{background:#16a08522;color:#16a085}.ctag.健康{background:#e74c3c22;color:#e74c3c}.ctag.工作{background:#2980b922;color:#2980b9}.ctag.学习{background:#8e44ad22;color:#8e44ad}.ctag.生活{background:#e67e2222;color:#e67e22}.ctag.家庭{background:#c0392b22;color:#c0392b}.ctag.收藏{background:#9b59b622;color:#9b59b6}.ctag.社交{background:#f39c1222;color:#f39c12}.ctag.出行{background:#2c3e5022;color:#2c3e50}.ctag.其他{background:#7f8c8d22;color:#7f8c8d}
 body.dark{background:#12181f;color:#d5dce5}
 body.dark a.card{background:#1a222c;color:#d5dce5;box-shadow:0 2px 10px rgba(0,0,0,.3)}
 body.dark a.card:hover{box-shadow:0 10px 26px rgba(0,0,0,.5)}
@@ -41,178 +47,137 @@ body.dark .foot{color:#5c6a7a}
 <div class="hero">
   <button class="themeBtn" onclick="toggleTheme()">🌙</button>
   <h1>🦐 我的管理系统套件</h1>
-  <p>30 个即开即用的本地管理系统 · 数据保存在浏览器中 · 无需联网 · 可导出备份</p>
+  <p>100 个即开即用的本地管理系统 · 数据保存在浏览器中 · 无需联网 · 可导出备份</p>
   <div class="search"><input id="q" placeholder="🔍 搜索系统，如：健康 / 记录 / 提醒…" oninput="filterCards()"><span class="cnt" id="cnt"></span></div>
+  <div class="chips" id="chips"></div>
 </div>
 <main>
   <div class="grid">
-    <a class="card" href="01-理财管理系统.html" data-name="理财管理系统">
-      <div class="icon">💰</div><h3><span class="no">1</span> 理财管理系统</h3>
-      <p>收支记账、预算控制、分类统计、月度趋势图表，做自己的财务管家。</p>
-      <div class="bar"><div style="width:100%;background:#16a085"></div></div>
-    </a>
-    <a class="card" href="02-健身管理系统.html" data-name="健身管理系统">
-      <div class="icon">💪</div><h3><span class="no">2</span> 健身管理系统</h3>
-      <p>训练计划、动作库、组次重量记录、体重体脂曲线，科学增肌减脂。</p>
-      <div class="bar"><div style="width:100%;background:#e74c3c"></div></div>
-    </a>
-    <a class="card" href="03-读书管理系统.html" data-name="读书管理系统">
-      <div class="icon">📚</div><h3><span class="no">3</span> 读书管理系统</h3>
-      <p>书库管理、阅读打卡、读书笔记、年度阅读统计，养成阅读习惯。</p>
-      <div class="bar"><div style="width:100%;background:#8e44ad"></div></div>
-    </a>
-    <a class="card" href="04-饮食健康系统.html" data-name="饮食健康系统">
-      <div class="icon">🥗</div><h3><span class="no">4</span> 饮食健康系统</h3>
-      <p>三餐热量、三大营养素、饮水打卡、体重跟踪，吃得明白更健康。</p>
-      <div class="bar"><div style="width:100%;background:#27ae60"></div></div>
-    </a>
-    <a class="card" href="05-时间管理系统.html" data-name="时间管理系统">
-      <div class="icon">⏰</div><h3><span class="no">5</span> 时间管理系统</h3>
-      <p>番茄钟专注、日程安排、时间统计报表，掌控你的每一天。</p>
-      <div class="bar"><div style="width:100%;background:#f39c12"></div></div>
-    </a>
-    <a class="card" href="06-任务待办系统.html" data-name="任务待办系统">
-      <div class="icon">✅</div><h3><span class="no">6</span> 任务待办系统</h3>
-      <p>待办清单、优先级、分类看板、完成统计，任务井井有条。</p>
-      <div class="bar"><div style="width:100%;background:#2980b9"></div></div>
-    </a>
-    <a class="card" href="07-习惯养成系统.html" data-name="习惯养成系统">
-      <div class="icon">🔥</div><h3><span class="no">7</span> 习惯养成系统</h3>
-      <p>每日习惯打卡、连续天数、月度热力图，坚持看得见。</p>
-      <div class="bar"><div style="width:100%;background:#e67e22"></div></div>
-    </a>
-    <a class="card" href="08-学习管理系统.html" data-name="学习管理系统">
-      <div class="icon">🎓</div><h3><span class="no">8</span> 学习管理系统</h3>
-      <p>科目管理、学习时长记录、考试倒计时，目标明确地学习。</p>
-      <div class="bar"><div style="width:100%;background:#1abc9c"></div></div>
-    </a>
-    <a class="card" href="09-项目管理系统.html" data-name="项目管理系统">
-      <div class="icon">🗂️</div><h3><span class="no">9</span> 项目管理系统</h3>
-      <p>项目进度、任务分解、里程碑节点，多项目并行不混乱。</p>
-      <div class="bar"><div style="width:100%;background:#34495e"></div></div>
-    </a>
-    <a class="card" href="10-旅行规划系统.html" data-name="旅行规划系统">
-      <div class="icon">✈️</div><h3><span class="no">10</span> 旅行规划系统</h3>
-      <p>行程安排、预算管理、行李清单，说走就走有备无患。</p>
-      <div class="bar"><div style="width:100%;background:#3498db"></div></div>
-    </a>
-    <a class="card" href="11-备忘录系统.html" data-name="备忘录系统">
-      <div class="icon">📝</div><h3><span class="no">11</span> 备忘录系统</h3>
-      <p>分类便签、置顶、关键词搜索，灵感不再丢。</p>
-      <div class="bar"><div style="width:100%;background:#5f9ea0"></div></div>
-    </a>
-    <a class="card" href="12-购物清单系统.html" data-name="购物清单系统">
-      <div class="icon">🛒</div><h3><span class="no">12</span> 购物清单系统</h3>
-      <p>购物清单、预算金额、分类管理，买得明白不超支。</p>
-      <div class="bar"><div style="width:100%;background:#e67e22"></div></div>
-    </a>
-    <a class="card" href="13-体重健康系统.html" data-name="体重健康系统">
-      <div class="icon">⚖️</div><h3><span class="no">13</span> 体重健康系统</h3>
-      <p>体重体脂记录、BMI 计算、趋势曲线，健康管理可视化。</p>
-      <div class="bar"><div style="width:100%;background:#16a085"></div></div>
-    </a>
-    <a class="card" href="14-睡眠记录系统.html" data-name="睡眠记录系统">
-      <div class="icon">😴</div><h3><span class="no">14</span> 睡眠记录系统</h3>
-      <p>入睡起床时间、睡眠时长自动计算、质量评级，睡个好觉。</p>
-      <div class="bar"><div style="width:100%;background:#6c5ce7"></div></div>
-    </a>
-    <a class="card" href="15-喝水打卡系统.html" data-name="喝水打卡系统">
-      <div class="icon">💧</div><h3><span class="no">15</span> 喝水打卡系统</h3>
-      <p>每日饮水目标、杯数打卡、连续达标统计，健康饮水。</p>
-      <div class="bar"><div style="width:100%;background:#00b894"></div></div>
-    </a>
-    <a class="card" href="16-单词记忆系统.html" data-name="单词记忆系统">
-      <div class="icon">🔤</div><h3><span class="no">16</span> 单词记忆系统</h3>
-      <p>生词本、释义例句、掌握进度、分级管理，背单词更高效。</p>
-      <div class="bar"><div style="width:100%;background:#0984e3"></div></div>
-    </a>
-    <a class="card" href="17-观影清单系统.html" data-name="观影清单系统">
-      <div class="icon">🎬</div><h3><span class="no">17</span> 观影清单系统</h3>
-      <p>想看/已看管理、类型分类、评分短评，影单不迷路。</p>
-      <div class="bar"><div style="width:100%;background:#d63031"></div></div>
-    </a>
-    <a class="card" href="18-用药提醒系统.html" data-name="用药提醒系统">
-      <div class="icon">💊</div><h3><span class="no">18</span> 用药提醒系统</h3>
-      <p>用药记录、剂量频次、周期管理，按时吃药不遗漏。</p>
-      <div class="bar"><div style="width:100%;background:#fab1a0"></div></div>
-    </a>
-    <a class="card" href="19-生日提醒系统.html" data-name="生日提醒系统">
-      <div class="icon">🎂</div><h3><span class="no">19</span> 生日提醒系统</h3>
-      <p>亲友生日、关系分类、倒计时提醒，重要日子不忘记。</p>
-      <div class="bar"><div style="width:100%;background:#fd79a8"></div></div>
-    </a>
-    <a class="card" href="20-旅行足迹系统.html" data-name="旅行足迹系统">
-      <div class="icon">🗺️</div><h3><span class="no">20</span> 旅行足迹系统</h3>
-      <p>走过的城市、时间线、同行人，记录你的世界地图。</p>
-      <div class="bar"><div style="width:100%;background:#00cec9"></div></div>
-    </a>
-    <a class="card" href="21-灵感速记系统.html" data-name="灵感速记系统">
-      <div class="icon">💡</div><h3><span class="no">21</span> 灵感速记系统</h3>
-      <p>随时记录灵感、标签归类、来源追踪，好点子不溜走。</p>
-      <div class="bar"><div style="width:100%;background:#fdcb6e"></div></div>
-    </a>
-    <a class="card" href="22-目标OKR系统.html" data-name="目标OKR系统">
-      <div class="icon">🎯</div><h3><span class="no">22</span> 目标OKR系统</h3>
-      <p>目标与关键结果、季度管理、进度追踪，让目标落地。</p>
-      <div class="bar"><div style="width:100%;background:#e17055"></div></div>
-    </a>
-    <a class="card" href="23-心情日记系统.html" data-name="心情日记系统">
-      <div class="icon">📔</div><h3><span class="no">23</span> 心情日记系统</h3>
-      <p>每日心情、天气、随记，情绪日历记录每一天。</p>
-      <div class="bar"><div style="width:100%;background:#a29bfe"></div></div>
-    </a>
-    <a class="card" href="24-借还管理系统.html" data-name="借还管理系统">
-      <div class="icon">🔄</div><h3><span class="no">24</span> 借还管理系统</h3>
-      <p>借出借入、归还日期、状态追踪，有借有还再借不难。</p>
-      <div class="bar"><div style="width:100%;background:#636e72"></div></div>
-    </a>
-    <a class="card" href="25-快递追踪系统.html" data-name="快递追踪系统">
-      <div class="icon">📦</div><h3><span class="no">25</span> 快递追踪系统</h3>
-      <p>快递单号、物流状态、包裹备忘，网购一目了然。</p>
-      <div class="bar"><div style="width:100%;background:#74b9ff"></div></div>
-    </a>
-    <a class="card" href="26-菜谱收藏系统.html" data-name="菜谱收藏系统">
-      <div class="icon">🍳</div><h3><span class="no">26</span> 菜谱收藏系统</h3>
-      <p>菜谱收藏、食材步骤、难度评分，今天吃什么不纠结。</p>
-      <div class="bar"><div style="width:100%;background:#e84393"></div></div>
-    </a>
-    <a class="card" href="27-宠物管理系统.html" data-name="宠物管理系统">
-      <div class="icon">🐱</div><h3><span class="no">27</span> 宠物管理系统</h3>
-      <p>宠物档案、疫苗日期、体重记录，毛孩子健康管家。</p>
-      <div class="bar"><div style="width:100%;background:#55efc4"></div></div>
-    </a>
-    <a class="card" href="28-发票管理系统.html" data-name="发票管理系统">
-      <div class="icon">🧾</div><h3><span class="no">28</span> 发票管理系统</h3>
-      <p>发票记录、金额分类、报销统计，报销不用翻票根。</p>
-      <div class="bar"><div style="width:100%;background:#57606f"></div></div>
-    </a>
-    <a class="card" href="29-乐器练习系统.html" data-name="乐器练习系统">
-      <div class="icon">🎹</div><h3><span class="no">29</span> 乐器练习系统</h3>
-      <p>练习时长、曲目记录、专项统计，一万小时不白练。</p>
-      <div class="bar"><div style="width:100%;background:#ff7675"></div></div>
-    </a>
-    <a class="card" href="30-还款提醒系统.html" data-name="还款提醒系统">
-      <div class="icon">💳</div><h3><span class="no">30</span> 还款提醒系统</h3>
-      <p>信用卡花呗、账单金额、还款日提醒，告别逾期。</p>
-      <div class="bar"><div style="width:100%;background:#f0932b"></div></div>
-    </a>
+<a class="card" href="01-理财管理系统.html" data-name="理财管理系统" data-cat="财务"><div class="icon">💰</div><h3><span class="no">1</span> 理财管理系统</h3><p>收支记账、预算控制、分类统计、月度趋势图表，做自己的财务管家。</p><div class="bar"><div style="width:100%;background:#16a085"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="02-健身管理系统.html" data-name="健身管理系统" data-cat="健康"><div class="icon">💪</div><h3><span class="no">2</span> 健身管理系统</h3><p>训练计划、动作库、组次重量记录、体重体脂曲线，科学增肌减脂。</p><div class="bar"><div style="width:100%;background:#e74c3c"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="03-读书管理系统.html" data-name="读书管理系统" data-cat="学习"><div class="icon">📚</div><h3><span class="no">3</span> 读书管理系统</h3><p>书库管理、阅读打卡、读书笔记、年度阅读统计，养成阅读习惯。</p><div class="bar"><div style="width:100%;background:#8e44ad"></div></div><span class="ctag 学习">学习</span></a>
+<a class="card" href="04-饮食健康系统.html" data-name="饮食健康系统" data-cat="健康"><div class="icon">🥗</div><h3><span class="no">4</span> 饮食健康系统</h3><p>三餐热量、三大营养素、饮水打卡、体重跟踪，吃得明白更健康。</p><div class="bar"><div style="width:100%;background:#27ae60"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="05-时间管理系统.html" data-name="时间管理系统" data-cat="工作"><div class="icon">⏰</div><h3><span class="no">5</span> 时间管理系统</h3><p>番茄钟专注、日程安排、时间统计报表，掌控你的每一天。</p><div class="bar"><div style="width:100%;background:#f39c12"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="06-任务待办系统.html" data-name="任务待办系统" data-cat="工作"><div class="icon">✅</div><h3><span class="no">6</span> 任务待办系统</h3><p>待办清单、优先级、分类看板、完成统计，任务井井有条。</p><div class="bar"><div style="width:100%;background:#2980b9"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="07-习惯养成系统.html" data-name="习惯养成系统" data-cat="健康"><div class="icon">🔥</div><h3><span class="no">7</span> 习惯养成系统</h3><p>每日习惯打卡、连续天数、月度热力图，坚持看得见。</p><div class="bar"><div style="width:100%;background:#e67e22"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="08-学习管理系统.html" data-name="学习管理系统" data-cat="学习"><div class="icon">🎓</div><h3><span class="no">8</span> 学习管理系统</h3><p>科目管理、学习时长记录、考试倒计时，目标明确地学习。</p><div class="bar"><div style="width:100%;background:#1abc9c"></div></div><span class="ctag 学习">学习</span></a>
+<a class="card" href="09-项目管理系统.html" data-name="项目管理系统" data-cat="工作"><div class="icon">🗂️</div><h3><span class="no">9</span> 项目管理系统</h3><p>项目进度、任务分解、里程碑节点，多项目并行不混乱。</p><div class="bar"><div style="width:100%;background:#34495e"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="10-旅行规划系统.html" data-name="旅行规划系统" data-cat="出行"><div class="icon">✈️</div><h3><span class="no">10</span> 旅行规划系统</h3><p>行程安排、预算管理、行李清单，说走就走有备无患。</p><div class="bar"><div style="width:100%;background:#3498db"></div></div><span class="ctag 出行">出行</span></a>
+<a class="card" href="11-备忘录系统.html" data-name="备忘录系统" data-cat="生活"><div class="icon">📝</div><h3><span class="no">11</span> 备忘录系统</h3><p>分类便签、置顶、关键词搜索，灵感不再丢。</p><div class="bar"><div style="width:100%;background:#5f9ea0"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="12-购物清单系统.html" data-name="购物清单系统" data-cat="生活"><div class="icon">🛒</div><h3><span class="no">12</span> 购物清单系统</h3><p>购物清单、预算金额、分类管理，买得明白不超支。</p><div class="bar"><div style="width:100%;background:#e67e22"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="13-体重健康系统.html" data-name="体重健康系统" data-cat="健康"><div class="icon">⚖️</div><h3><span class="no">13</span> 体重健康系统</h3><p>体重体脂记录、BMI 计算、趋势曲线，健康管理可视化。</p><div class="bar"><div style="width:100%;background:#16a085"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="14-睡眠记录系统.html" data-name="睡眠记录系统" data-cat="健康"><div class="icon">😴</div><h3><span class="no">14</span> 睡眠记录系统</h3><p>入睡起床时间、睡眠时长自动计算、质量评级，睡个好觉。</p><div class="bar"><div style="width:100%;background:#6c5ce7"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="15-喝水打卡系统.html" data-name="喝水打卡系统" data-cat="健康"><div class="icon">💧</div><h3><span class="no">15</span> 喝水打卡系统</h3><p>每日饮水目标、杯数打卡、连续达标统计，健康饮水。</p><div class="bar"><div style="width:100%;background:#00b894"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="16-单词记忆系统.html" data-name="单词记忆系统" data-cat="学习"><div class="icon">🔤</div><h3><span class="no">16</span> 单词记忆系统</h3><p>生词本、释义例句、掌握进度、分级管理，背单词更高效。</p><div class="bar"><div style="width:100%;background:#0984e3"></div></div><span class="ctag 学习">学习</span></a>
+<a class="card" href="17-观影清单系统.html" data-name="观影清单系统" data-cat="收藏"><div class="icon">🎬</div><h3><span class="no">17</span> 观影清单系统</h3><p>想看/已看管理、类型分类、评分短评，影单不迷路。</p><div class="bar"><div style="width:100%;background:#d63031"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="18-用药提醒系统.html" data-name="用药提醒系统" data-cat="健康"><div class="icon">💊</div><h3><span class="no">18</span> 用药提醒系统</h3><p>用药记录、剂量频次、周期管理，按时吃药不遗漏。</p><div class="bar"><div style="width:100%;background:#fab1a0"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="19-生日提醒系统.html" data-name="生日提醒系统" data-cat="生活"><div class="icon">🎂</div><h3><span class="no">19</span> 生日提醒系统</h3><p>亲友生日、关系分类、倒计时提醒，重要日子不忘记。</p><div class="bar"><div style="width:100%;background:#fd79a8"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="20-旅行足迹系统.html" data-name="旅行足迹系统" data-cat="出行"><div class="icon">🗺️</div><h3><span class="no">20</span> 旅行足迹系统</h3><p>走过的城市、时间线、同行人，记录你的世界地图。</p><div class="bar"><div style="width:100%;background:#00cec9"></div></div><span class="ctag 出行">出行</span></a>
+<a class="card" href="21-灵感速记系统.html" data-name="灵感速记系统" data-cat="生活"><div class="icon">💡</div><h3><span class="no">21</span> 灵感速记系统</h3><p>随时记录灵感、标签归类、来源追踪，好点子不溜走。</p><div class="bar"><div style="width:100%;background:#fdcb6e"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="22-目标OKR系统.html" data-name="目标OKR系统" data-cat="工作"><div class="icon">🎯</div><h3><span class="no">22</span> 目标OKR系统</h3><p>目标与关键结果、季度管理、进度追踪，让目标落地。</p><div class="bar"><div style="width:100%;background:#e17055"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="23-心情日记系统.html" data-name="心情日记系统" data-cat="健康"><div class="icon">📔</div><h3><span class="no">23</span> 心情日记系统</h3><p>每日心情、天气、随记，情绪日历记录每一天。</p><div class="bar"><div style="width:100%;background:#a29bfe"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="24-借还管理系统.html" data-name="借还管理系统" data-cat="生活"><div class="icon">🔄</div><h3><span class="no">24</span> 借还管理系统</h3><p>借出借入、归还日期、状态追踪，有借有还再借不难。</p><div class="bar"><div style="width:100%;background:#636e72"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="25-快递追踪系统.html" data-name="快递追踪系统" data-cat="生活"><div class="icon">📦</div><h3><span class="no">25</span> 快递追踪系统</h3><p>快递单号、物流状态、包裹备忘，网购一目了然。</p><div class="bar"><div style="width:100%;background:#74b9ff"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="26-菜谱收藏系统.html" data-name="菜谱收藏系统" data-cat="生活"><div class="icon">🍳</div><h3><span class="no">26</span> 菜谱收藏系统</h3><p>菜谱收藏、食材步骤、难度评分，今天吃什么不纠结。</p><div class="bar"><div style="width:100%;background:#e84393"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="27-宠物管理系统.html" data-name="宠物管理系统" data-cat="生活"><div class="icon">🐱</div><h3><span class="no">27</span> 宠物管理系统</h3><p>宠物档案、疫苗日期、体重记录，毛孩子健康管家。</p><div class="bar"><div style="width:100%;background:#55efc4"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="28-发票管理系统.html" data-name="发票管理系统" data-cat="财务"><div class="icon">🧾</div><h3><span class="no">28</span> 发票管理系统</h3><p>发票记录、金额分类、报销统计，报销不用翻票根。</p><div class="bar"><div style="width:100%;background:#57606f"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="29-乐器练习系统.html" data-name="乐器练习系统" data-cat="收藏"><div class="icon">🎹</div><h3><span class="no">29</span> 乐器练习系统</h3><p>练习时长、曲目记录、专项统计，一万小时不白练。</p><div class="bar"><div style="width:100%;background:#ff7675"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="30-还款提醒系统.html" data-name="还款提醒系统" data-cat="财务"><div class="icon">💳</div><h3><span class="no">30</span> 还款提醒系统</h3><p>信用卡花呗、账单金额、还款日提醒，告别逾期。</p><div class="bar"><div style="width:100%;background:#f0932b"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="31-血压记录系统.html" data-name="血压记录系统" data-cat="健康"><div class="icon">🩺</div><h3><span class="no">31</span> 血压记录系统</h3><p>每日血压趋势，高压低压一目了然</p><div class="bar"><div style="width:100%;background:#e74c3c"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="32-血糖记录系统.html" data-name="血糖记录系统" data-cat="健康"><div class="icon">📉</div><h3><span class="no">32</span> 血糖记录系统</h3><p>空腹餐后血糖追踪，控糖更科学</p><div class="bar"><div style="width:100%;background:#e67e22"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="33-跑步记录系统.html" data-name="跑步记录系统" data-cat="健康"><div class="icon">🏃</div><h3><span class="no">33</span> 跑步记录系统</h3><p>距离配速心率全记录，见证每一步</p><div class="bar"><div style="width:100%;background:#3498db"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="34-冥想打卡系统.html" data-name="冥想打卡系统" data-cat="健康"><div class="icon">🧘</div><h3><span class="no">34</span> 冥想打卡系统</h3><p>每日静心打卡，累积心灵平静</p><div class="bar"><div style="width:100%;background:#8e44ad"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="35-拉伸锻炼系统.html" data-name="拉伸锻炼系统" data-cat="健康"><div class="icon">🤸</div><h3><span class="no">35</span> 拉伸锻炼系统</h3><p>部位强度打卡，身体柔韧不僵硬</p><div class="bar"><div style="width:100%;background:#1abc9c"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="36-体检报告系统.html" data-name="体检报告系统" data-cat="健康"><div class="icon">🏥</div><h3><span class="no">36</span> 体检报告系统</h3><p>历年体检归档，指标变化趋势全掌握</p><div class="bar"><div style="width:100%;background:#16a085"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="37-牙齿护理系统.html" data-name="牙齿护理系统" data-cat="健康"><div class="icon">🦷</div><h3><span class="no">37</span> 牙齿护理系统</h3><p>洗牙补牙正畸记录，一口好牙伴终身</p><div class="bar"><div style="width:100%;background:#5d6d7e"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="38-营养补充系统.html" data-name="营养补充系统" data-cat="健康"><div class="icon">💊</div><h3><span class="no">38</span> 营养补充系统</h3><p>维生素矿物质记录，营养摄入不遗漏</p><div class="bar"><div style="width:100%;background:#f39c12"></div></div><span class="ctag 健康">健康</span></a>
+<a class="card" href="39-基金定投系统.html" data-name="基金定投系统" data-cat="财务"><div class="icon">📈</div><h3><span class="no">39</span> 基金定投系统</h3><p>定投计划与收益跟踪，长期主义看得见</p><div class="bar"><div style="width:100%;background:#c0392b"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="40-保险单管理系统.html" data-name="保险单管理系统" data-cat="财务"><div class="icon">🛡️</div><h3><span class="no">40</span> 保险单管理系统</h3><p>全家保单集中管理，保障不漏保不过期</p><div class="bar"><div style="width:100%;background:#2e86c1"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="41-信用卡管理系统.html" data-name="信用卡管理系统" data-cat="财务"><div class="icon">💳</div><h3><span class="no">41</span> 信用卡管理系统</h3><p>账单日还款日额度管理，告别逾期</p><div class="bar"><div style="width:100%;background:#9b59b6"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="42-会员卡管理系统.html" data-name="会员卡管理系统" data-cat="财务"><div class="icon">🎫</div><h3><span class="no">42</span> 会员卡管理系统</h3><p>商家卡券余额积分，不放过每分优惠</p><div class="bar"><div style="width:100%;background:#27ae60"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="43-二手交易系统.html" data-name="二手交易系统" data-cat="财务"><div class="icon">🔁</div><h3><span class="no">43</span> 二手交易系统</h3><p>卖出买入记录，闲置变现金</p><div class="bar"><div style="width:100%;background:#e67e22"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="44-零花钱管理系统.html" data-name="零花钱管理系统" data-cat="财务"><div class="icon">💰</div><h3><span class="no">44</span> 零花钱管理系统</h3><p>孩子零花钱收支账本，财商从小培养</p><div class="bar"><div style="width:100%;background:#f1c40f"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="45-公积金社保系统.html" data-name="公积金社保系统" data-cat="财务"><div class="icon">🏦</div><h3><span class="no">45</span> 公积金社保系统</h3><p>缴费基数比例记录，福利待遇心中明</p><div class="bar"><div style="width:100%;background:#34495e"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="46-存钱计划系统.html" data-name="存钱计划系统" data-cat="财务"><div class="icon">🎯</div><h3><span class="no">46</span> 存钱计划系统</h3><p>目标储蓄计划，攒钱进度看得见</p><div class="bar"><div style="width:100%;background:#16a085"></div></div><span class="ctag 财务">财务</span></a>
+<a class="card" href="47-会议记录系统.html" data-name="会议记录系统" data-cat="工作"><div class="icon">📋</div><h3><span class="no">47</span> 会议记录系统</h3><p>会议纪要归档，结论待办不遗漏</p><div class="bar"><div style="width:100%;background:#2c3e50"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="48-客户管理系统.html" data-name="客户管理系统" data-cat="工作"><div class="icon">🤝</div><h3><span class="no">48</span> 客户管理系统</h3><p>客户资料归档，跟进节奏不混乱</p><div class="bar"><div style="width:100%;background:#2980b9"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="49-简历投递系统.html" data-name="简历投递系统" data-cat="工作"><div class="icon">📄</div><h3><span class="no">49</span> 简历投递系统</h3><p>投递面试全流程跟踪，Offer 手到擒来</p><div class="bar"><div style="width:100%;background:#c0392b"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="50-面试记录系统.html" data-name="面试记录系统" data-cat="工作"><div class="icon">🎤</div><h3><span class="no">50</span> 面试记录系统</h3><p>每场面试复盘，越面越强</p><div class="bar"><div style="width:100%;background:#8e44ad"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="51-培训学习系统.html" data-name="培训学习系统" data-cat="工作"><div class="icon">📚</div><h3><span class="no">51</span> 培训学习系统</h3><p>课程培训记录，技能升级有迹可循</p><div class="bar"><div style="width:100%;background:#27ae60"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="52-代码片段系统.html" data-name="代码片段系统" data-cat="工作"><div class="icon">💻</div><h3><span class="no">52</span> 代码片段系统</h3><p>常用代码片段收藏，复制即用</p><div class="bar"><div style="width:100%;background:#1e8449"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="53-周报管理系统.html" data-name="周报管理系统" data-cat="工作"><div class="icon">🗓️</div><h3><span class="no">53</span> 周报管理系统</h3><p>周报沉淀归档，成长轨迹清晰</p><div class="bar"><div style="width:100%;background:#5d6d7e"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="54-职称证书系统.html" data-name="职称证书系统" data-cat="工作"><div class="icon">🏅</div><h3><span class="no">54</span> 职称证书系统</h3><p>证书资质管理，到期提醒不误事</p><div class="bar"><div style="width:100%;background:#b9770e"></div></div><span class="ctag 工作">工作</span></a>
+<a class="card" href="55-课程表系统.html" data-name="课程表系统" data-cat="学习"><div class="icon">📅</div><h3><span class="no">55</span> 课程表系统</h3><p>每周课表管理，上课不迟到</p><div class="bar"><div style="width:100%;background:#2980b9"></div></div><span class="ctag 学习">学习</span></a>
+<a class="card" href="56-考试计划系统.html" data-name="考试计划系统" data-cat="学习"><div class="icon">📝</div><h3><span class="no">56</span> 考试计划系统</h3><p>备考计划管理，目标分数可视化</p><div class="bar"><div style="width:100%;background:#c0392b"></div></div><span class="ctag 学习">学习</span></a>
+<a class="card" href="57-摘抄笔记系统.html" data-name="摘抄笔记系统" data-cat="学习"><div class="icon">📖</div><h3><span class="no">57</span> 摘抄笔记系统</h3><p>金句摘抄感悟，输入转化为沉淀</p><div class="bar"><div style="width:100%;background:#16a085"></div></div><span class="ctag 学习">学习</span></a>
+<a class="card" href="58-错题本系统.html" data-name="错题本系统" data-cat="学习"><div class="icon">❌</div><h3><span class="no">58</span> 错题本系统</h3><p>错题归类复盘，提分利器</p><div class="bar"><div style="width:100%;background:#e74c3c"></div></div><span class="ctag 学习">学习</span></a>
+<a class="card" href="59-论文进度系统.html" data-name="论文进度系统" data-cat="学习"><div class="icon">📄</div><h3><span class="no">59</span> 论文进度系统</h3><p>论文阶段管理，从选题到发表</p><div class="bar"><div style="width:100%;background:#6c3483"></div></div><span class="ctag 学习">学习</span></a>
+<a class="card" href="60-知识卡片系统.html" data-name="知识卡片系统" data-cat="学习"><div class="icon">🃏</div><h3><span class="no">60</span> 知识卡片系统</h3><p>碎片知识卡片，艾宾浩斯复习</p><div class="bar"><div style="width:100%;background:#f39c12"></div></div><span class="ctag 学习">学习</span></a>
+<a class="card" href="61-家庭药箱系统.html" data-name="家庭药箱系统" data-cat="生活"><div class="icon">💊</div><h3><span class="no">61</span> 家庭药箱系统</h3><p>常备药品库存有效期，急用不慌张</p><div class="bar"><div style="width:100%;background:#e67e22"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="62-衣橱管理系统.html" data-name="衣橱管理系统" data-cat="生活"><div class="icon">👗</div><h3><span class="no">62</span> 衣橱管理系统</h3><p>衣物电子档案，换季穿搭不迷茫</p><div class="bar"><div style="width:100%;background:#c0392b"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="63-证件管理系统.html" data-name="证件管理系统" data-cat="生活"><div class="icon">🪪</div><h3><span class="no">63</span> 证件管理系统</h3><p>证件有效期管理，到期自动提醒</p><div class="bar"><div style="width:100%;background:#1a5276"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="64-家电保修系统.html" data-name="家电保修系统" data-cat="生活"><div class="icon">🔌</div><h3><span class="no">64</span> 家电保修系统</h3><p>家电购买保修记录，报修有凭证</p><div class="bar"><div style="width:100%;background:#2e86c1"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="65-车辆保养系统.html" data-name="车辆保养系统" data-cat="生活"><div class="icon">🚗</div><h3><span class="no">65</span> 车辆保养系统</h3><p>保养年检保险记录，爱车状态全掌握</p><div class="bar"><div style="width:100%;background:#b03a2e"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="66-油耗记录系统.html" data-name="油耗记录系统" data-cat="生活"><div class="icon">⛽</div><h3><span class="no">66</span> 油耗记录系统</h3><p>加油里程油耗分析，开车更省心</p><div class="bar"><div style="width:100%;background:#7d6608"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="67-房租水电系统.html" data-name="房租水电系统" data-cat="生活"><div class="icon">🏠</div><h3><span class="no">67</span> 房租水电系统</h3><p>每月生活账单，支出心里有数</p><div class="bar"><div style="width:100%;background:#34495e"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="68-绿植养护系统.html" data-name="绿植养护系统" data-cat="生活"><div class="icon">🪴</div><h3><span class="no">68</span> 绿植养护系统</h3><p>浇水施肥提醒，绿植生机勃勃</p><div class="bar"><div style="width:100%;background:#1e8449"></div></div><span class="ctag 生活">生活</span></a>
+<a class="card" href="69-子女成长系统.html" data-name="子女成长系统" data-cat="家庭"><div class="icon">👶</div><h3><span class="no">69</span> 子女成长系统</h3><p>身高体重疫苗里程碑，成长全记录</p><div class="bar"><div style="width:100%;background:#f1948a"></div></div><span class="ctag 家庭">家庭</span></a>
+<a class="card" href="70-家庭物品系统.html" data-name="家庭物品系统" data-cat="家庭"><div class="icon">📦</div><h3><span class="no">70</span> 家庭物品系统</h3><p>物品清单档案，搬家保险都有底</p><div class="bar"><div style="width:100%;background:#5d6d7e"></div></div><span class="ctag 家庭">家庭</span></a>
+<a class="card" href="71-家居维修系统.html" data-name="家居维修系统" data-cat="家庭"><div class="icon">🔧</div><h3><span class="no">71</span> 家居维修系统</h3><p>维修记录保修期管理，居家无忧</p><div class="bar"><div style="width:100%;background:#b9770e"></div></div><span class="ctag 家庭">家庭</span></a>
+<a class="card" href="72-家庭聚餐系统.html" data-name="家庭聚餐系统" data-cat="家庭"><div class="icon">🍽️</div><h3><span class="no">72</span> 家庭聚餐系统</h3><p>聚餐记录花费，家庭时光更珍贵</p><div class="bar"><div style="width:100%;background:#d35400"></div></div><span class="ctag 家庭">家庭</span></a>
+<a class="card" href="73-纪念日系统.html" data-name="纪念日系统" data-cat="家庭"><div class="icon">🎉</div><h3><span class="no">73</span> 纪念日系统</h3><p>生日结婚纪念日，重要日子不错过</p><div class="bar"><div style="width:100%;background:#e74c3c"></div></div><span class="ctag 家庭">家庭</span></a>
+<a class="card" href="74-家务分工系统.html" data-name="家务分工系统" data-cat="家庭"><div class="icon">🧹</div><h3><span class="no">74</span> 家务分工系统</h3><p>家务分配进度，家庭协作更高效</p><div class="bar"><div style="width:100%;background:#16a085"></div></div><span class="ctag 家庭">家庭</span></a>
+<a class="card" href="75-游戏进度系统.html" data-name="游戏进度系统" data-cat="收藏"><div class="icon">🎮</div><h3><span class="no">75</span> 游戏进度系统</h3><p>游戏库进度评分，防沉迷也防烂尾</p><div class="bar"><div style="width:100%;background:#8e44ad"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="76-音乐收藏系统.html" data-name="音乐收藏系统" data-cat="收藏"><div class="icon">🎵</div><h3><span class="no">76</span> 音乐收藏系统</h3><p>专辑歌单收藏，音乐品味沉淀</p><div class="bar"><div style="width:100%;background:#c0392b"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="77-摄影作品系统.html" data-name="摄影作品系统" data-cat="收藏"><div class="icon">📷</div><h3><span class="no">77</span> 摄影作品系统</h3><p>作品参数归档，摄影水平进阶</p><div class="bar"><div style="width:100%;background:#2e86c1"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="78-手办收藏系统.html" data-name="手办收藏系统" data-cat="收藏"><div class="icon">🧸</div><h3><span class="no">78</span> 手办收藏系统</h3><p>手办购入记录，收藏价值可视化</p><div class="bar"><div style="width:100%;background:#9b59b6"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="79-邮票收藏系统.html" data-name="邮票收藏系统" data-cat="收藏"><div class="icon">📮</div><h3><span class="no">79</span> 邮票收藏系统</h3><p>邮票藏品档案，方寸之间看世界</p><div class="bar"><div style="width:100%;background:#7d6608"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="80-钓鱼记录系统.html" data-name="钓鱼记录系统" data-cat="收藏"><div class="icon">🎣</div><h3><span class="no">80</span> 钓鱼记录系统</h3><p>鱼获记录，空军的日子也有数</p><div class="bar"><div style="width:100%;background:#2874a6"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="81-徒步登山系统.html" data-name="徒步登山系统" data-cat="收藏"><div class="icon">⛰️</div><h3><span class="no">81</span> 徒步登山系统</h3><p>登山足迹记录，海拔高度解锁</p><div class="bar"><div style="width:100%;background:#1e8449"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="82-球类运动系统.html" data-name="球类运动系统" data-cat="收藏"><div class="icon">⚽</div><h3><span class="no">82</span> 球类运动系统</h3><p>比赛胜负记录，球技切磋有数据</p><div class="bar"><div style="width:100%;background:#1abc9c"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="83-桌游记录系统.html" data-name="桌游记录系统" data-cat="收藏"><div class="icon">🎲</div><h3><span class="no">83</span> 桌游记录系统</h3><p>桌游战绩复盘，桌友圈的欢乐档案</p><div class="bar"><div style="width:100%;background:#6c3483"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="84-盲盒收藏系统.html" data-name="盲盒收藏系统" data-cat="收藏"><div class="icon">🎁</div><h3><span class="no">84</span> 盲盒收藏系统</h3><p>盲盒重复统计，端盒不踩雷</p><div class="bar"><div style="width:100%;background:#e67e22"></div></div><span class="ctag 收藏">收藏</span></a>
+<a class="card" href="85-礼物记录系统.html" data-name="礼物记录系统" data-cat="社交"><div class="icon">🎁</div><h3><span class="no">85</span> 礼物记录系统</h3><p>送礼收礼记录，人情往来有分寸</p><div class="bar"><div style="width:100%;background:#d35400"></div></div><span class="ctag 社交">社交</span></a>
+<a class="card" href="86-人情往来系统.html" data-name="人情往来系统" data-cat="社交"><div class="icon">🧧</div><h3><span class="no">86</span> 人情往来系统</h3><p>红包随礼记录，人情账目不糊涂</p><div class="bar"><div style="width:100%;background:#c0392b"></div></div><span class="ctag 社交">社交</span></a>
+<a class="card" href="87-聚会记录系统.html" data-name="聚会记录系统" data-cat="社交"><div class="icon">🍻</div><h3><span class="no">87</span> 聚会记录系统</h3><p>聚会活动记录，友谊常在</p><div class="bar"><div style="width:100%;background:#f39c12"></div></div><span class="ctag 社交">社交</span></a>
+<a class="card" href="88-联系记录系统.html" data-name="联系记录系统" data-cat="社交"><div class="icon">📞</div><h3><span class="no">88</span> 联系记录系统</h3><p>朋友联系频次管理，别让关系冷却</p><div class="bar"><div style="width:100%;background:#2980b9"></div></div><span class="ctag 社交">社交</span></a>
+<a class="card" href="89-社团活动系统.html" data-name="社团活动系统" data-cat="社交"><div class="icon">🏕️</div><h3><span class="no">89</span> 社团活动系统</h3><p>社团活动参与记录，组织能力可量化</p><div class="bar"><div style="width:100%;background:#1a5276"></div></div><span class="ctag 社交">社交</span></a>
+<a class="card" href="90-志愿服务系统.html" data-name="志愿服务系统" data-cat="社交"><div class="icon">🤝</div><h3><span class="no">90</span> 志愿服务系统</h3><p>志愿时长记录，公益足迹有力量</p><div class="bar"><div style="width:100%;background:#27ae60"></div></div><span class="ctag 社交">社交</span></a>
+<a class="card" href="91-航班记录系统.html" data-name="航班记录系统" data-cat="出行"><div class="icon">✈️</div><h3><span class="no">91</span> 航班记录系统</h3><p>飞行记录里程积累，常旅客有数</p><div class="bar"><div style="width:100%;background:#2c3e50"></div></div><span class="ctag 出行">出行</span></a>
+<a class="card" href="92-酒店积分系统.html" data-name="酒店积分系统" data-cat="出行"><div class="icon">🏨</div><h3><span class="no">92</span> 酒店积分系统</h3><p>酒店入住积分，出差旅行都划算</p><div class="bar"><div style="width:100%;background:#5d6d7e"></div></div><span class="ctag 出行">出行</span></a>
+<a class="card" href="93-自驾路线系统.html" data-name="自驾路线系统" data-cat="出行"><div class="icon">🚗</div><h3><span class="no">93</span> 自驾路线系统</h3><p>自驾游路线记录，车轮上的诗和远方</p><div class="bar"><div style="width:100%;background:#b03a2e"></div></div><span class="ctag 出行">出行</span></a>
+<a class="card" href="94-行李清单系统.html" data-name="行李清单系统" data-cat="出行"><div class="icon">🧳</div><h3><span class="no">94</span> 行李清单系统</h3><p>出行打包清单，说走就走不遗漏</p><div class="bar"><div style="width:100%;background:#2874a6"></div></div><span class="ctag 出行">出行</span></a>
+<a class="card" href="95-化妆品库存系统.html" data-name="化妆品库存系统" data-cat="其他"><div class="icon">💄</div><h3><span class="no">95</span> 化妆品库存系统</h3><p>化妆品库存保质期，买买买也理性</p><div class="bar"><div style="width:100%;background:#c0392b"></div></div><span class="ctag 其他">其他</span></a>
+<a class="card" href="96-护肤品记录系统.html" data-name="护肤品记录系统" data-cat="其他"><div class="icon">🧴</div><h3><span class="no">96</span> 护肤品记录系统</h3><p>护肤流程记录，找到最适合自己的</p><div class="bar"><div style="width:100%;background:#e91e63"></div></div><span class="ctag 其他">其他</span></a>
+<a class="card" href="97-茶酒收藏系统.html" data-name="茶酒收藏系统" data-cat="其他"><div class="icon">🍷</div><h3><span class="no">97</span> 茶酒收藏系统</h3><p>茶酒藏品档案，品味时光的收藏</p><div class="bar"><div style="width:100%;background:#7b241c"></div></div><span class="ctag 其他">其他</span></a>
+<a class="card" href="98-明信片系统.html" data-name="明信片系统" data-cat="其他"><div class="icon">🏞️</div><h3><span class="no">98</span> 明信片系统</h3><p>明信片收藏，来自远方的问候</p><div class="bar"><div style="width:100%;background:#148f77"></div></div><span class="ctag 其他">其他</span></a>
+<a class="card" href="99-纪念币系统.html" data-name="纪念币系统" data-cat="其他"><div class="icon">🪙</div><h3><span class="no">99</span> 纪念币系统</h3><p>纪念币收藏，方寸金属载历史</p><div class="bar"><div style="width:100%;background:#b8860b"></div></div><span class="ctag 其他">其他</span></a>
+<a class="card" href="100-年度计划系统.html" data-name="年度计划系统" data-cat="其他"><div class="icon">🎯</div><h3><span class="no">100</span> 年度计划系统</h3><p>年度目标分解管理，一年之计在于春</p><div class="bar"><div style="width:100%;background:#34495e"></div></div><span class="ctag 其他">其他</span></a>
   </div>
 </main>
-<div class="foot">所有数据仅保存在本地浏览器 localStorage · 每个系统右上角可「📤 导出」备份、🌙 切换深色模式、✨ 一键载入示例数据</div>
+<div class="foot">🦐 OpenSquilla · 100 管理系统套件 · 数据 100% 本地存储</div>
 <script>
-function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=t==='dark'?'☀️':'🌙')}
+const CATS=['全部', '财务', '健康', '工作', '学习', '生活', '家庭', '收藏', '社交', '出行', '其他'];
+let curCat='全部';
+function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.querySelector('.themeBtn').textContent=t==='dark'?'☀️':'🌙'}
 function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
-function filterCards(){
-  const kw=document.getElementById('q').value.trim().toLowerCase();
-  let n=0;
-  document.querySelectorAll('a.card').forEach(c=>{
-    const hit=!kw||(c.dataset.name+' '+c.querySelector('h3').textContent+' '+c.querySelector('p').textContent).toLowerCase().includes(kw);
-    c.classList.toggle('hide',!hit);if(hit)n++;
-  });
-  document.getElementById('cnt').textContent=kw?n+' 个':(n+' 个系统');
-}
 applyTheme(localStorage.getItem('theme')||'light');
-filterCards();
+function renderChips(){
+  const cnt={};document.querySelectorAll('.card').forEach(c=>{const ct=c.dataset.cat;cnt[ct]=(cnt[ct]||0)+1});
+  document.getElementById('chips').innerHTML=CATS.map(c=>'<span class="chip'+(c===curCat?' active':'')+'" onclick="setCat(\''+c+'\')">'+c+(c!=='全部'?' '+cnt[c]:'')+'</span>').join('');
+}
+function setCat(c){curCat=c;renderChips();filterCards()}
+function filterCards(){
+  const q=(document.getElementById('q').value||'').trim().toLowerCase();
+  let n=0;
+  document.querySelectorAll('.card').forEach(c=>{
+    const okCat=curCat==='全部'||c.dataset.cat===curCat;
+    const okQ=!q||c.dataset.name.toLowerCase().includes(q)||c.dataset.cat.includes(q);
+    const show=okCat&&okQ;c.classList.toggle('hide',!show);if(show)n++;
+  });
+  document.getElementById('cnt').textContent=n+'/'+document.querySelectorAll('.card').length;
+}
+renderChips();filterCards();
 </script>
 </body>
 </html>
