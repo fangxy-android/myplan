@@ -7,29 +7,33 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6f9;color:#2c3e50;min-height:100vh}
-.hero{background:linear-gradient(135deg,#1e3a5f,#3a7bd5);color:#fff;padding:48px 24px 56px;text-align:center;position:relative}
+.hero{background:linear-gradient(135deg,#1e3a5f,#3a7bd5);color:#fff;padding:44px 24px 56px;text-align:center;position:relative}
 .hero .themeBtn{position:absolute;top:18px;right:22px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
 .hero .themeBtn:hover{background:rgba(255,255,255,.3)}
-.hero h1{font-size:32px;margin-bottom:10px;letter-spacing:2px}
+.hero h1{font-size:30px;margin-bottom:10px;letter-spacing:2px}
 .hero p{opacity:.85;font-size:14px}
-main{max-width:1080px;margin:-32px auto 60px;padding:0 24px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-a.card{background:#fff;border-radius:16px;padding:22px 20px;text-decoration:none;color:#2c3e50;box-shadow:0 2px 10px rgba(0,0,0,.06);transition:.25s;display:block;position:relative}
+.hero .search{max-width:420px;margin:18px auto 0;position:relative}
+.hero .search input{width:100%;padding:11px 18px;border-radius:24px;border:none;outline:none;font-size:14px;background:rgba(255,255,255,.95);color:#2c3e50;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.hero .search .cnt{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:12px;color:#9aa5b1}
+main{max-width:1120px;margin:-34px auto 60px;padding:0 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+a.card{background:#fff;border-radius:16px;padding:20px;text-decoration:none;color:#2c3e50;box-shadow:0 2px 10px rgba(0,0,0,.06);transition:.25s;display:block;position:relative}
 a.card:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(0,0,0,.12)}
-.card .icon{font-size:34px;margin-bottom:10px}
-.card h3{font-size:17px;margin-bottom:6px}
+a.card.hide{display:none}
+.card .icon{font-size:32px;margin-bottom:10px}
+.card h3{font-size:16px;margin-bottom:6px}
+.card h3 .no{display:inline-block;min-width:24px;font-size:10.5px;color:#fff;background:#3a7bd5;border-radius:8px;padding:2px 6px;vertical-align:2px;margin-right:6px}
 .card p{font-size:12.5px;color:#7f8c9b;line-height:1.6}
 .card .bar{height:5px;border-radius:4px;background:#eef1f5;margin-top:14px;overflow:hidden}
 .card .bar>div{height:100%;border-radius:4px}
-.card::after{content:'✅ 已就绪';position:absolute;top:14px;right:14px;font-size:11px;color:#16a085;background:#e8f8f5;padding:2px 8px;border-radius:12px;font-weight:600}
+.card::after{content:'✅';position:absolute;top:14px;right:14px;font-size:13px}
 .foot{text-align:center;color:#b0b8c4;font-size:12px;padding-bottom:30px}
-/* ---------- 优化：深色模式 ---------- */
 body.dark{background:#12181f;color:#d5dce5}
 body.dark a.card{background:#1a222c;color:#d5dce5;box-shadow:0 2px 10px rgba(0,0,0,.3)}
 body.dark a.card:hover{box-shadow:0 10px 26px rgba(0,0,0,.5)}
 body.dark .card p{color:#9aa7b8}
 body.dark .card .bar{background:#27333f}
-body.dark .card::after{color:#2ecc71;background:#1e3a2f}
+body.dark .card h3 .no{background:#3a7bd5}
 body.dark .foot{color:#5c6a7a}
 </style>
 </head>
@@ -37,59 +41,160 @@ body.dark .foot{color:#5c6a7a}
 <div class="hero">
   <button class="themeBtn" onclick="toggleTheme()">🌙</button>
   <h1>🦐 我的管理系统套件</h1>
-  <p>10 个即开即用的本地管理系统 · 数据保存在浏览器中 · 无需联网 · 可导出备份</p>
+  <p>30 个即开即用的本地管理系统 · 数据保存在浏览器中 · 无需联网 · 可导出备份</p>
+  <div class="search"><input id="q" placeholder="🔍 搜索系统，如：健康 / 记录 / 提醒…" oninput="filterCards()"><span class="cnt" id="cnt"></span></div>
 </div>
 <main>
   <div class="grid">
-    <a class="card" href="01-理财管理系统.html">
-      <div class="icon">💰</div><h3>理财管理系统</h3>
+    <a class="card" href="01-理财管理系统.html" data-name="理财管理系统">
+      <div class="icon">💰</div><h3><span class="no">1</span> 理财管理系统</h3>
       <p>收支记账、预算控制、分类统计、月度趋势图表，做自己的财务管家。</p>
       <div class="bar"><div style="width:100%;background:#16a085"></div></div>
     </a>
-    <a class="card" href="02-健身管理系统.html">
-      <div class="icon">💪</div><h3>健身管理系统</h3>
+    <a class="card" href="02-健身管理系统.html" data-name="健身管理系统">
+      <div class="icon">💪</div><h3><span class="no">2</span> 健身管理系统</h3>
       <p>训练计划、动作库、组次重量记录、体重体脂曲线，科学增肌减脂。</p>
       <div class="bar"><div style="width:100%;background:#e74c3c"></div></div>
     </a>
-    <a class="card" href="03-读书管理系统.html">
-      <div class="icon">📚</div><h3>读书管理系统</h3>
+    <a class="card" href="03-读书管理系统.html" data-name="读书管理系统">
+      <div class="icon">📚</div><h3><span class="no">3</span> 读书管理系统</h3>
       <p>书库管理、阅读打卡、读书笔记、年度阅读统计，养成阅读习惯。</p>
       <div class="bar"><div style="width:100%;background:#8e44ad"></div></div>
     </a>
-    <a class="card" href="04-饮食健康系统.html">
-      <div class="icon">🥗</div><h3>饮食健康系统</h3>
+    <a class="card" href="04-饮食健康系统.html" data-name="饮食健康系统">
+      <div class="icon">🥗</div><h3><span class="no">4</span> 饮食健康系统</h3>
       <p>三餐热量、三大营养素、饮水打卡、体重跟踪，吃得明白更健康。</p>
       <div class="bar"><div style="width:100%;background:#27ae60"></div></div>
     </a>
-    <a class="card" href="05-时间管理系统.html">
-      <div class="icon">⏰</div><h3>时间管理系统</h3>
+    <a class="card" href="05-时间管理系统.html" data-name="时间管理系统">
+      <div class="icon">⏰</div><h3><span class="no">5</span> 时间管理系统</h3>
       <p>番茄钟专注、日程安排、时间统计报表，掌控你的每一天。</p>
       <div class="bar"><div style="width:100%;background:#f39c12"></div></div>
     </a>
-    <a class="card" href="06-任务待办系统.html">
-      <div class="icon">✅</div><h3>任务待办系统</h3>
+    <a class="card" href="06-任务待办系统.html" data-name="任务待办系统">
+      <div class="icon">✅</div><h3><span class="no">6</span> 任务待办系统</h3>
       <p>待办清单、优先级、分类看板、完成统计，任务井井有条。</p>
       <div class="bar"><div style="width:100%;background:#2980b9"></div></div>
     </a>
-    <a class="card" href="07-习惯养成系统.html">
-      <div class="icon">🔥</div><h3>习惯养成系统</h3>
+    <a class="card" href="07-习惯养成系统.html" data-name="习惯养成系统">
+      <div class="icon">🔥</div><h3><span class="no">7</span> 习惯养成系统</h3>
       <p>每日习惯打卡、连续天数、月度热力图，坚持看得见。</p>
       <div class="bar"><div style="width:100%;background:#e67e22"></div></div>
     </a>
-    <a class="card" href="08-学习管理系统.html">
-      <div class="icon">🎓</div><h3>学习管理系统</h3>
+    <a class="card" href="08-学习管理系统.html" data-name="学习管理系统">
+      <div class="icon">🎓</div><h3><span class="no">8</span> 学习管理系统</h3>
       <p>科目管理、学习时长记录、考试倒计时，目标明确地学习。</p>
       <div class="bar"><div style="width:100%;background:#1abc9c"></div></div>
     </a>
-    <a class="card" href="09-项目管理系统.html">
-      <div class="icon">🗂️</div><h3>项目管理系统</h3>
+    <a class="card" href="09-项目管理系统.html" data-name="项目管理系统">
+      <div class="icon">🗂️</div><h3><span class="no">9</span> 项目管理系统</h3>
       <p>项目进度、任务分解、里程碑节点，多项目并行不混乱。</p>
       <div class="bar"><div style="width:100%;background:#34495e"></div></div>
     </a>
-    <a class="card" href="10-旅行规划系统.html">
-      <div class="icon">✈️</div><h3>旅行规划系统</h3>
+    <a class="card" href="10-旅行规划系统.html" data-name="旅行规划系统">
+      <div class="icon">✈️</div><h3><span class="no">10</span> 旅行规划系统</h3>
       <p>行程安排、预算管理、行李清单，说走就走有备无患。</p>
       <div class="bar"><div style="width:100%;background:#3498db"></div></div>
+    </a>
+    <a class="card" href="11-备忘录系统.html" data-name="备忘录系统">
+      <div class="icon">📝</div><h3><span class="no">11</span> 备忘录系统</h3>
+      <p>分类便签、置顶、关键词搜索，灵感不再丢。</p>
+      <div class="bar"><div style="width:100%;background:#5f9ea0"></div></div>
+    </a>
+    <a class="card" href="12-购物清单系统.html" data-name="购物清单系统">
+      <div class="icon">🛒</div><h3><span class="no">12</span> 购物清单系统</h3>
+      <p>购物清单、预算金额、分类管理，买得明白不超支。</p>
+      <div class="bar"><div style="width:100%;background:#e67e22"></div></div>
+    </a>
+    <a class="card" href="13-体重健康系统.html" data-name="体重健康系统">
+      <div class="icon">⚖️</div><h3><span class="no">13</span> 体重健康系统</h3>
+      <p>体重体脂记录、BMI 计算、趋势曲线，健康管理可视化。</p>
+      <div class="bar"><div style="width:100%;background:#16a085"></div></div>
+    </a>
+    <a class="card" href="14-睡眠记录系统.html" data-name="睡眠记录系统">
+      <div class="icon">😴</div><h3><span class="no">14</span> 睡眠记录系统</h3>
+      <p>入睡起床时间、睡眠时长自动计算、质量评级，睡个好觉。</p>
+      <div class="bar"><div style="width:100%;background:#6c5ce7"></div></div>
+    </a>
+    <a class="card" href="15-喝水打卡系统.html" data-name="喝水打卡系统">
+      <div class="icon">💧</div><h3><span class="no">15</span> 喝水打卡系统</h3>
+      <p>每日饮水目标、杯数打卡、连续达标统计，健康饮水。</p>
+      <div class="bar"><div style="width:100%;background:#00b894"></div></div>
+    </a>
+    <a class="card" href="16-单词记忆系统.html" data-name="单词记忆系统">
+      <div class="icon">🔤</div><h3><span class="no">16</span> 单词记忆系统</h3>
+      <p>生词本、释义例句、掌握进度、分级管理，背单词更高效。</p>
+      <div class="bar"><div style="width:100%;background:#0984e3"></div></div>
+    </a>
+    <a class="card" href="17-观影清单系统.html" data-name="观影清单系统">
+      <div class="icon">🎬</div><h3><span class="no">17</span> 观影清单系统</h3>
+      <p>想看/已看管理、类型分类、评分短评，影单不迷路。</p>
+      <div class="bar"><div style="width:100%;background:#d63031"></div></div>
+    </a>
+    <a class="card" href="18-用药提醒系统.html" data-name="用药提醒系统">
+      <div class="icon">💊</div><h3><span class="no">18</span> 用药提醒系统</h3>
+      <p>用药记录、剂量频次、周期管理，按时吃药不遗漏。</p>
+      <div class="bar"><div style="width:100%;background:#fab1a0"></div></div>
+    </a>
+    <a class="card" href="19-生日提醒系统.html" data-name="生日提醒系统">
+      <div class="icon">🎂</div><h3><span class="no">19</span> 生日提醒系统</h3>
+      <p>亲友生日、关系分类、倒计时提醒，重要日子不忘记。</p>
+      <div class="bar"><div style="width:100%;background:#fd79a8"></div></div>
+    </a>
+    <a class="card" href="20-旅行足迹系统.html" data-name="旅行足迹系统">
+      <div class="icon">🗺️</div><h3><span class="no">20</span> 旅行足迹系统</h3>
+      <p>走过的城市、时间线、同行人，记录你的世界地图。</p>
+      <div class="bar"><div style="width:100%;background:#00cec9"></div></div>
+    </a>
+    <a class="card" href="21-灵感速记系统.html" data-name="灵感速记系统">
+      <div class="icon">💡</div><h3><span class="no">21</span> 灵感速记系统</h3>
+      <p>随时记录灵感、标签归类、来源追踪，好点子不溜走。</p>
+      <div class="bar"><div style="width:100%;background:#fdcb6e"></div></div>
+    </a>
+    <a class="card" href="22-目标OKR系统.html" data-name="目标OKR系统">
+      <div class="icon">🎯</div><h3><span class="no">22</span> 目标OKR系统</h3>
+      <p>目标与关键结果、季度管理、进度追踪，让目标落地。</p>
+      <div class="bar"><div style="width:100%;background:#e17055"></div></div>
+    </a>
+    <a class="card" href="23-心情日记系统.html" data-name="心情日记系统">
+      <div class="icon">📔</div><h3><span class="no">23</span> 心情日记系统</h3>
+      <p>每日心情、天气、随记，情绪日历记录每一天。</p>
+      <div class="bar"><div style="width:100%;background:#a29bfe"></div></div>
+    </a>
+    <a class="card" href="24-借还管理系统.html" data-name="借还管理系统">
+      <div class="icon">🔄</div><h3><span class="no">24</span> 借还管理系统</h3>
+      <p>借出借入、归还日期、状态追踪，有借有还再借不难。</p>
+      <div class="bar"><div style="width:100%;background:#636e72"></div></div>
+    </a>
+    <a class="card" href="25-快递追踪系统.html" data-name="快递追踪系统">
+      <div class="icon">📦</div><h3><span class="no">25</span> 快递追踪系统</h3>
+      <p>快递单号、物流状态、包裹备忘，网购一目了然。</p>
+      <div class="bar"><div style="width:100%;background:#74b9ff"></div></div>
+    </a>
+    <a class="card" href="26-菜谱收藏系统.html" data-name="菜谱收藏系统">
+      <div class="icon">🍳</div><h3><span class="no">26</span> 菜谱收藏系统</h3>
+      <p>菜谱收藏、食材步骤、难度评分，今天吃什么不纠结。</p>
+      <div class="bar"><div style="width:100%;background:#e84393"></div></div>
+    </a>
+    <a class="card" href="27-宠物管理系统.html" data-name="宠物管理系统">
+      <div class="icon">🐱</div><h3><span class="no">27</span> 宠物管理系统</h3>
+      <p>宠物档案、疫苗日期、体重记录，毛孩子健康管家。</p>
+      <div class="bar"><div style="width:100%;background:#55efc4"></div></div>
+    </a>
+    <a class="card" href="28-发票管理系统.html" data-name="发票管理系统">
+      <div class="icon">🧾</div><h3><span class="no">28</span> 发票管理系统</h3>
+      <p>发票记录、金额分类、报销统计，报销不用翻票根。</p>
+      <div class="bar"><div style="width:100%;background:#57606f"></div></div>
+    </a>
+    <a class="card" href="29-乐器练习系统.html" data-name="乐器练习系统">
+      <div class="icon">🎹</div><h3><span class="no">29</span> 乐器练习系统</h3>
+      <p>练习时长、曲目记录、专项统计，一万小时不白练。</p>
+      <div class="bar"><div style="width:100%;background:#ff7675"></div></div>
+    </a>
+    <a class="card" href="30-还款提醒系统.html" data-name="还款提醒系统">
+      <div class="icon">💳</div><h3><span class="no">30</span> 还款提醒系统</h3>
+      <p>信用卡花呗、账单金额、还款日提醒，告别逾期。</p>
+      <div class="bar"><div style="width:100%;background:#f0932b"></div></div>
     </a>
   </div>
 </main>
@@ -97,7 +202,17 @@ body.dark .foot{color:#5c6a7a}
 <script>
 function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=t==='dark'?'☀️':'🌙')}
 function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
+function filterCards(){
+  const kw=document.getElementById('q').value.trim().toLowerCase();
+  let n=0;
+  document.querySelectorAll('a.card').forEach(c=>{
+    const hit=!kw||(c.dataset.name+' '+c.querySelector('h3').textContent+' '+c.querySelector('p').textContent).toLowerCase().includes(kw);
+    c.classList.toggle('hide',!hit);if(hit)n++;
+  });
+  document.getElementById('cnt').textContent=kw?n+' 个':(n+' 个系统');
+}
 applyTheme(localStorage.getItem('theme')||'light');
+filterCards();
 </script>
 </body>
 </html>
