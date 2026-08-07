@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💪 健身管理系统</title>
+<style>
+:root{--accent:#e74c3c;--accent2:#c0392b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6f9;color:#2c3e50;min-height:100vh}
+header{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header .logo{font-size:20px;font-weight:700;letter-spacing:1px}
+header .actions{display:flex;gap:8px}
+header button{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
+header button:hover{background:rgba(255,255,255,.3)}
+.tabs{display:flex;gap:6px;padding:12px 24px 0;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e8ecf1;position:sticky;top:0;z-index:10}
+.tabs button{border:none;background:transparent;padding:10px 16px;font-size:14px;color:#6b7686;cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+.tabs button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.tabpane{display:none}
+.tabpane.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card .label{font-size:12px;color:#9aa5b1;margin-bottom:6px}
+.card .value{font-size:23px;font-weight:700;color:#2c3e50}
+.card .sub{font-size:12px;color:#7f8c9b;margin-top:4px}
+.panel{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:18px}
+.panel h3{font-size:15px;margin-bottom:14px;color:#34495e;display:flex;justify-content:space-between;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+canvas{width:100%;height:220px;display:block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8fafc;color:#6b7686;text-align:left;padding:9px 10px;border-bottom:1px solid #e8ecf1;font-weight:600;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f1f4f8}
+tr:hover td{background:#fafcff}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.tag.strength{background:#fdecea;color:#c0392b}
+.tag.cardio{background:#eaf2fb;color:#2980b9}
+.tag.flex{background:#f4ecfb;color:#8e44ad}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:9px;cursor:pointer;font-size:13px;transition:.2s}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:#eef1f5;color:#34495e}
+.btn.danger{background:#fdecea;color:#c0392b}
+.btn.sm{padding:4px 10px;font-size:12px}
+.fab{position:fixed;right:28px;bottom:28px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:26px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50}
+.fab:hover{transform:scale(1.08)}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal{background:#fff;border-radius:16px;padding:22px;width:min(480px,92vw);max-height:88vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.modal h3{margin-bottom:16px;color:#2c3e50}
+.form-row{margin-bottom:13px}
+.form-row label{display:block;font-size:12px;color:#6b7686;margin-bottom:5px;font-weight:600}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1px solid #dde3ea;border-radius:9px;font-size:14px;outline:none;font-family:inherit}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(231,76,60,.12)}
+.form-row textarea{resize:vertical;min-height:60px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.hidden{display:none!important}
+#toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#2c3e50;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:200;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+#toast.show{opacity:1}
+.empty{text-align:center;color:#b0b8c4;padding:32px 0;font-size:13px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.filters select,.filters input{padding:7px 10px;border:1px solid #dde3ea;border-radius:8px;font-size:13px;outline:none}
+.muscle-list{display:flex;flex-wrap:wrap;gap:8px}
+.muscle-tag{background:#f8fafc;border:1px solid #e8ecf1;padding:6px 12px;border-radius:20px;font-size:12px;color:#34495e;cursor:pointer;transition:.15s}
+.muscle-tag:hover{border-color:var(--accent);color:var(--accent)}
+.muscle-tag.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* ---------- 优化：深色模式 / 打印 / 返回按钮 ---------- */
+header .backBtn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;text-decoration:none;font-size:13px;transition:.2s}
+header .backBtn:hover{background:rgba(255,255,255,.3)}
+body.dark{background:#12181f;color:#d5dce5}
+body.dark header{box-shadow:0 2px 8px rgba(0,0,0,.4)}
+body.dark .tabs{background:#161d26;border-bottom-color:#1f2a36}
+body.dark .tabs button{color:#8b98a9}
+body.dark .card,body.dark .panel{background:#1a222c;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+body.dark .card .value,body.dark .modal h3{color:#e6ecf3}
+body.dark .card .label,body.dark .panel h3{color:#9aa7b8}
+body.dark th{background:#1e2833;color:#9aa7b8;border-bottom-color:#273242}
+body.dark td{border-bottom-color:#202b37}
+body.dark tr:hover td{background:#1d2732}
+body.dark .btn.ghost{background:#27333f;color:#d5dce5}
+body.dark .form-row input,body.dark .form-row select,body.dark .form-row textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .modal{background:#1a222c}
+body.dark .modal-overlay{background:rgba(8,12,18,.6)}
+body.dark .filters select,body.dark .filters input,body.dark .filters input::placeholder{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .empty{color:#5c6a7a}
+body.dark .progress{background:#27333f}
+@media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">💪 健身管理系统</div>
+  <div class="actions">
+    <a href="index.html" class="backBtn">🏠 总览</a>
+    <button onclick="toggleTheme()" class="themeBtn">🌙</button>
+    <button onclick="loadExample()">✨ 示例</button>
+    <button onclick="exportData()">📤 导出</button>
+    <button onclick="document.getElementById('file').click()">📥 导入</button>
+    <input type="file" id="file" accept=".json" class="hidden" onchange="importData(this)">
+  </div>
+</header>
+<nav class="tabs">
+  <button class="active" data-tab="dash" onclick="switchTab('dash')">仪表盘</button>
+  <button data-tab="workouts" onclick="switchTab('workouts')">训练记录</button>
+  <button data-tab="exercises" onclick="switchTab('exercises')">动作库</button>
+  <button data-tab="body" onclick="switchTab('body')">身体数据</button>
+</nav>
+<main>
+  <section id="tab-dash" class="tabpane active">
+    <div class="cards" id="dashCards"></div>
+    <div class="grid2">
+      <div class="panel"><h3>近 30 天体重趋势</h3><canvas id="chartWeight"></canvas></div>
+      <div class="panel"><h3>训练部位分布（近 30 天）</h3><canvas id="chartMuscle"></canvas></div>
+    </div>
+    <div class="panel"><h3>最近训练</h3><div id="recentList"></div></div>
+  </section>
+  <section id="tab-workouts" class="tabpane">
+    <div class="panel">
+      <div class="filters">
+        <select id="fMuscle" onchange="renderWorkouts()"><option value="">全部部位</option></select>
+        <select id="fType" onchange="renderWorkouts()"><option value="">全部类型</option><option value="力量">力量</option><option value="有氧">有氧</option><option value="柔韧">柔韧</option></select>
+        <input type="month" id="fMonth" onchange="renderWorkouts()">
+        <input type="text" id="fSearch" placeholder="搜索动作…" oninput="renderWorkouts()" style="flex:1;min-width:140px">
+      </div>
+      <table id="workoutTable"></table>
+    </div>
+  </section>
+  <section id="tab-exercises" class="tabpane">
+    <div class="panel">
+      <h3>动作库管理<button class="btn sm" onclick="openExercise()">＋ 添加动作</button></h3>
+      <div id="exerciseList"></div>
+    </div>
+  </section>
+  <section id="tab-body" class="tabpane">
+    <div class="cards" id="bodyCards"></div>
+    <div class="panel"><h3>体重 / 体脂曲线</h3><canvas id="chartBody"></canvas></div>
+    <div class="panel"><h3>身体数据记录</h3><table id="bodyTable"></table></div>
+  </section>
+</main>
+<button class="fab" onclick="openWorkout()">＋</button>
+
+<div id="modal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="modalTitle">添加训练</h3>
+    <div class="form-row"><label>日期</label><input type="date" id="wDate"></div>
+    <div class="form-row"><label>动作</label>
+      <input type="text" id="wExercise" list="exerciseList" placeholder="输入或从动作库选择">
+      <datalist id="exerciseOptions"></datalist>
+    </div>
+    <div class="form-row"><label>类型</label><select id="wType"><option value="力量">力量</option><option value="有氧">有氧</option><option value="柔韧">柔韧</option></select></div>
+    <div class="form-row" id="rowStrength">
+      <div style="display:flex;gap:10px">
+        <div style="flex:1"><label>组数</label><input type="number" id="wSets" min="1" value="4"></div>
+        <div style="flex:1"><label>次数</label><input type="number" id="wReps" min="1" placeholder="每组的次数"></div>
+        <div style="flex:1"><label>重量(kg)</label><input type="number" id="wWeight" min="0" step="0.5" placeholder="0"></div>
+      </div>
+    </div>
+    <div class="form-row" id="rowCardio" style="display:none">
+      <div style="display:flex;gap:10px">
+        <div style="flex:1"><label>时长(分钟)</label><input type="number" id="wDuration" min="1" value="30"></div>
+        <div style="flex:1"><label>距离(km)</label><input type="number" id="wDist" min="0" step="0.1" placeholder="可选"></div>
+      </div>
+    </div>
+    <div class="form-row"><label>备注</label><textarea id="wNote" placeholder="训练感受、强度等（可选）"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">取消</button>
+      <button class="btn" onclick="saveWorkout()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalEx" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="modalExTitle">添加动作</h3>
+    <div class="form-row"><label>动作名称</label><input type="text" id="exName" placeholder="如：杠铃卧推"></div>
+    <div class="form-row"><label>训练部位</label>
+      <select id="exMuscle"><option value="胸">胸</option><option value="背">背</option><option value="肩">肩</option><option value="手臂">手臂</option><option value="腿">腿</option><option value="臀">臀</option><option value="核心">核心</option><option value="全身">全身</option></select>
+    </div>
+    <div class="form-row"><label>类型</label><select id="exType"><option value="力量">力量</option><option value="有氧">有氧</option><option value="柔韧">柔韧</option></select></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModalEx()">取消</button>
+      <button class="btn" onclick="saveExercise()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalBody" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>记录身体数据</h3>
+    <div class="form-row"><label>日期</label><input type="date" id="bDate"></div>
+    <div class="form-row"><label>体重(kg)</label><input type="number" id="bWeight" step="0.1" placeholder="如 65.5"></div>
+    <div class="form-row"><label>体脂率(%)</label><input type="number" id="bFat" step="0.1" placeholder="可选"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModalBody()">取消</button>
+      <button class="btn" onclick="saveBody()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+const KEY='fitness_sys_v1';
+let db=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{workouts:[],exercises:[],body:[]}}catch(e){return {workouts:[],exercises:[],body:[]}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=t==='dark'?'☀️':'🌙')}
+function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
+applyTheme(localStorage.getItem('theme')||'light');
+function loadExample(){
+  if(!confirm('将用示例数据覆盖当前训练记录，确定？'))return;
+  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0');
+  const day=n=>y+'-'+m+'-'+String(n).padStart(2,'0');
+  db.workouts=[
+    {id:uid(),date:day(1),exercise:'杠铃深蹲',type:'力量',sets:5,reps:8,weight:80,duration:0,dist:null,note:'主项'},
+    {id:uid(),date:day(2),exercise:'跑步',type:'有氧',sets:0,reps:null,weight:null,duration:30,dist:5,note:'晨跑'},
+    {id:uid(),date:day(4),exercise:'杠铃卧推',type:'力量',sets:4,reps:10,weight:50,duration:0,dist:null,note:''},
+    {id:uid(),date:day(6),exercise:'瑜伽拉伸',type:'柔韧',sets:0,reps:null,weight:null,duration:25,dist:null,note:'放松'},
+    {id:uid(),date:day(8),exercise:'引体向上',type:'力量',sets:4,reps:6,weight:0,duration:0,dist:null,note:''},
+    {id:uid(),date:day(10),exercise:'跳绳',type:'有氧',sets:0,reps:null,weight:null,duration:15,dist:null,note:'间歇'}
+  ];
+  db.body=[
+    {id:uid(),date:day(1),weight:72.5,fat:18.2},
+    {id:uid(),date:day(5),weight:72.1,fat:18.0},
+    {id:uid(),date:day(10),weight:71.8,fat:17.6}
+  ];
+  save();renderDash();buildWorkoutFilters();toast('已载入示例数据 ✨');
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fmt(n){return n==null?'—':n}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+
+if(!db.exercises.length){
+  db.exercises=[
+    {id:uid(),name:'杠铃卧推',muscle:'胸',type:'力量'},
+    {id:uid(),name:'哑铃飞鸟',muscle:'胸',type:'力量'},
+    {id:uid(),name:'引体向上',muscle:'背',type:'力量'},
+    {id:uid(),name:'杠铃划船',muscle:'背',type:'力量'},
+    {id:uid(),name:'哑铃推举',muscle:'肩',type:'力量'},
+    {id:uid(),name:'杠铃深蹲',muscle:'腿',type:'力量'},
+    {id:uid(),name:'硬拉',muscle:'背',type:'力量'},
+    {id:uid(),name:'腿举',muscle:'腿',type:'力量'},
+    {id:uid(),name:'弯举',muscle:'手臂',type:'力量'},
+    {id:uid(),name:'平板支撑',muscle:'核心',type:'力量'},
+    {id:uid(),name:'跑步',muscle:'全身',type:'有氧'},
+    {id:uid(),name:'跳绳',muscle:'全身',type:'有氧'},
+    {id:uid(),name:'瑜伽拉伸',muscle:'全身',type:'柔韧'}
+  ];save();
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
+  if(name==='dash')renderDash();
+  if(name==='workouts'){buildWorkoutFilters();renderWorkouts()}
+  if(name==='exercises')renderExercises();
+  if(name==='body')renderBody();
+}
+function openModal(m){document.getElementById(m).classList.remove('hidden')}
+function closeModal(){document.getElementById('modal').classList.add('hidden')}
+function closeModalEx(){document.getElementById('modalEx').classList.add('hidden')}
+function closeModalBody(){document.getElementById('modalBody').classList.add('hidden')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* ===== 训练记录 ===== */
+function openWorkout(){
+  document.getElementById('wDate').value=today();
+  document.getElementById('wExercise').value='';
+  document.getElementById('wSets').value=4;
+  document.getElementById('wReps').value='';
+  document.getElementById('wWeight').value='';
+  document.getElementById('wDuration').value=30;
+  document.getElementById('wDist').value='';
+  document.getElementById('wNote').value='';
+  const opts=document.getElementById('exerciseOptions');
+  opts.innerHTML='';
+  [...new Set(db.exercises.map(e=>e.name))].forEach(n=>{const o=document.createElement('option');o.value=n;opts.appendChild(o)});
+  document.getElementById('wType').onchange=function(){toggleTypeRows()};
+  document.getElementById('wExercise').oninput=function(){
+    const ex=db.exercises.find(e=>e.name===this.value);
+    if(ex){document.getElementById('wType').value=ex.type;toggleTypeRows()}
+  };
+  document.getElementById('modalTitle').textContent='添加训练';
+  openModal('modal');
+}
+function toggleTypeRows(){
+  const t=document.getElementById('wType').value;
+  document.getElementById('rowStrength').style.display=t==='力量'?'':'none';
+  document.getElementById('rowCardio').style.display=t!=='力量'?'':'none';
+}
+function saveWorkout(){
+  const w={
+    id:uid(),
+    date:document.getElementById('wDate').value||today(),
+    exercise:document.getElementById('wExercise').value.trim()||'未命名动作',
+    type:document.getElementById('wType').value,
+    sets:+document.getElementById('wSets').value||0,
+    reps:document.getElementById('wReps').value?+document.getElementById('wReps').value:null,
+    weight:document.getElementById('wWeight').value?+document.getElementById('wWeight').value:null,
+    duration:+document.getElementById('wDuration').value||0,
+    dist:document.getElementById('wDist').value?+document.getElementById('wDist').value:null,
+    note:document.getElementById('wNote').value.trim()
+  };
+  db.workouts.push(w);db.workouts.sort((a,b)=>a.date<b.date?1:-1);
+  if(!db.exercises.some(e=>e.name===w.exercise)){
+    db.exercises.push({id:uid(),name:w.exercise,muscle:guessMuscle(w.exercise),type:w.type});
+  }
+  save();closeModal();toast('已记录训练 💪');
+  renderDash();renderWorkouts();
+}
+function guessMuscle(name){
+  const map=[['胸',['卧推','飞鸟','俯卧撑','夹胸']],['背',['划船','引体','硬拉','下拉','耸肩']],['肩',['推举','侧平举','前平举','耸肩']],['腿',['深蹲','腿举','箭步','提踵','蹲']],['手臂',['弯举','臂屈伸','绳索']],['核心',['卷腹','平板','俄罗斯']],['臀',['臀桥','髋']]];
+  for(const [m,ks] of map)if(ks.some(k=>name.includes(k)))return m;
+  return '全身';
+}
+function renderWorkouts(){
+  const m=document.getElementById('fMuscle').value,t=document.getElementById('fType').value,mo=document.getElementById('fMonth').value,s=document.getElementById('fSearch').value.trim();
+  let list=db.workouts.filter(w=>
+    (!m||(db.exercises.find(e=>e.name===w.exercise)||{}).muscle===m||guessMuscle(w.exercise)===m)&&
+    (!t||w.type===t)&&(!mo||w.date.startsWith(mo))&&(!s||w.exercise.toLowerCase().includes(s.toLowerCase()))
+  );
+  const tb=document.getElementById('workoutTable');
+  if(!list.length){tb.innerHTML='<tr><td colspan="6" class="empty">暂无训练记录，点击右下角 ＋ 添加</td></tr>';return}
+  tb.innerHTML='<tr><th>日期</th><th>动作</th><th>类型</th><th>训练量</th><th>备注</th><th></th></tr>'+list.map(w=>{
+    const mus=(db.exercises.find(e=>e.name===w.exercise)||{}).muscle||guessMuscle(w.exercise);
+    let vol;
+    if(w.type==='力量')vol=(w.weight?w.weight+'kg × ':'')+w.sets+'组'+(w.reps?' × '+w.reps+'次':'');
+    else vol=w.duration+'分钟'+(w.dist?' · '+w.dist+'km':'');
+    const tc=w.type==='力量'?'strength':w.type==='有氧'?'cardio':'flex';
+    return `<tr><td>${w.date}</td><td>${esc(w.exercise)} <span class="tag ${tc}">${mus}</span></td><td>${w.type}</td><td>${vol}</td><td>${esc(w.note)||'—'}</td><td><button class="btn sm danger" onclick="delWorkout('${w.id}')">删除</button></td></tr>`;
+  }).join('');
+}
+function delWorkout(id){if(confirm('删除这条训练记录？')){db.workouts=db.workouts.filter(w=>w.id!==id);save();renderWorkouts();renderDash();toast('已删除')}}
+
+/* ===== 动作库 ===== */
+function openExercise(){
+  document.getElementById('exName').value='';document.getElementById('exMuscle').value='胸';document.getElementById('exType').value='力量';
+  openModal('modalEx');
+}
+function saveExercise(){
+  const name=document.getElementById('exName').value.trim();
+  if(!name){toast('请输入动作名称');return}
+  if(db.exercises.some(e=>e.name===name)){toast('该动作已存在');return}
+  db.exercises.push({id:uid(),name,muscle:document.getElementById('exMuscle').value,type:document.getElementById('exType').value});
+  save();closeModalEx();renderExercises();toast('已添加动作');
+}
+function renderExercises(){
+  const list=document.getElementById('exerciseList');
+  if(!db.exercises.length){list.innerHTML='<div class="empty">动作库为空</div>';return}
+  list.innerHTML='<div class="muscle-list">'+db.exercises.map(e=>{
+    const tc=e.type==='力量'?'strength':e.type==='有氧'?'cardio':'flex';
+    return `<div class="muscle-tag" style="cursor:default">${esc(e.name)} <span class="tag ${tc}" style="margin-left:4px">${e.muscle}</span> <button class="btn sm danger" style="margin-left:6px;padding:1px 8px" onclick="delExercise('${e.id}')">×</button></div>`;
+  }).join('')+'</div>';
+}
+function delExercise(id){if(confirm('删除该动作？已存在的训练记录不受影响')){db.exercises=db.exercises.filter(e=>e.id!==id);save();renderExercises()}}
+
+/* ===== 身体数据 ===== */
+function openBodyModal(){
+  document.getElementById('bDate').value=today();
+  const last=db.body[db.body.length-1];
+  document.getElementById('bWeight').value=last?last.weight:'';
+  document.getElementById('bFat').value=last?(last.fat||''):'';
+  openModal('modalBody');
+}
+function saveBody(){
+  const b={id:uid(),date:document.getElementById('bDate').value||today(),weight:+document.getElementById('bWeight').value||0,fat:document.getElementById('bFat').value?+document.getElementById('bFat').value:null};
+  if(!b.weight&&!b.fat){toast('请至少填写体重或体脂');return}
+  db.body.push(b);db.body.sort((a,b)=>a.date<b.date?1:-1);
+  save();closeModalBody();renderBody();renderDash();toast('已记录');
+}
+function renderBody(){
+  const cards=document.getElementById('bodyCards');
+  const last=db.body[0]||{};
+  const before=db.body[1]||{};
+  const diff=last.weight&&before.weight?(last.weight-before.weight):null;
+  cards.innerHTML=`
+    <div class="card"><div class="label">最新体重</div><div class="value">${fmt(last.weight)} kg</div><div class="sub">${diff!=null?(diff>0?'↑ +'+diff.toFixed(1):'↓ '+diff.toFixed(1))+' 较上次':'记录日期：'+(last.date||'—')}</div></div>
+    <div class="card"><div class="label">最新体脂率</div><div class="value">${fmt(last.fat)} %</div><div class="sub">目标区间 15%–20%</div></div>
+    <div class="card"><div class="label">BMI</div><div class="value">${last.weight?calcBmi(last.weight):'—'}</div><div class="sub">${last.weight?bmiText(last.weight):'记录体重后自动计算'}</div></div>
+    <div class="card"><div class="label">总记录数</div><div class="value">${db.body.length}</div><div class="sub">共记录 ${db.body.length} 次</div></div>`;
+  drawBodyChart();
+  const tb=document.getElementById('bodyTable');
+  if(!db.body.length){tb.innerHTML='<tr><td class="empty" colspan="4">暂无数据，点击右上角「记录」添加</td></tr>';return}
+  tb.innerHTML='<tr><th>日期</th><th>体重(kg)</th><th>体脂率(%)</th><th></th></tr>'+db.body.map(b=>`<tr><td>${b.date}</td><td>${fmt(b.weight)}</td><td>${fmt(b.fat)}</td><td><button class="btn sm danger" onclick="delBody('${b.id}')">删除</button></td></tr>`).join('');
+}
+function calcBmi(w){const h=1.72;return (w/(h*h)).toFixed(1)}
+function bmiText(w){const b=calcBmi(w);return b<18.5?'偏瘦':b<24?'正常':b<28?'超重':'肥胖'}
+function delBody(id){db.body=db.body.filter(b=>b.id!==id);save();renderBody();renderDash()}
+
+/* ===== 仪表盘 ===== */
+function renderDash(){
+  const cards=document.getElementById('dashCards');
+  const now=new Date(),ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const monthWs=db.workouts.filter(w=>w.date.startsWith(ym));
+  const weekWs=db.workouts.filter(w=>{const d=new Date(w.date+'T00:00:00');const diff=(now-d)/86400000;return diff>=0&&diff<7});
+  const weekVol=weekWs.reduce((s,w)=>s+(w.duration||0),0);
+  const lastBody=db.body[0];
+  cards.innerHTML=`
+    <div class="card"><div class="label">本月训练</div><div class="value">${monthWs.length} 次</div><div class="sub">${ym}</div></div>
+    <div class="card"><div class="label">本周训练</div><div class="value">${weekWs.length} 次</div><div class="sub">累计 ${weekVol} 分钟</div></div>
+    <div class="card"><div class="label">力量总容量</div><div class="value">${monthWs.filter(w=>w.type==='力量').reduce((s,w)=>s+(w.sets||0)*(w.reps||0)*(w.weight||0),0).toLocaleString()} kg</div><div class="sub">本月力量组总重量</div></div>
+    <div class="card"><div class="label">当前体重</div><div class="value">${fmt(lastBody?.weight)} kg</div><div class="sub">体脂 ${fmt(lastBody?.fat)}%</div></div>`;
+  drawWeightChart();
+  drawMuscleChart();
+  const rec=document.getElementById('recentList');
+  const recent=db.workouts.slice(0,8);
+  if(!recent.length){rec.innerHTML='<div class="empty">还没有训练记录，点击右下角 ＋ 开始记录你的第一次训练</div>';return}
+  rec.innerHTML='<table><tr><th>日期</th><th>动作</th><th>类型</th><th>训练量</th></tr>'+recent.map(w=>{
+    let vol;if(w.type==='力量')vol=(w.weight?w.weight+'kg×':'')+w.sets+'组'+(w.reps?'×'+w.reps:'');
+    else vol=w.duration+'分钟';
+    return `<tr><td>${w.date}</td><td>${esc(w.exercise)}</td><td>${w.type}</td><td>${vol}</td></tr>`;
+  }).join('')+'</table>';
+}
+
+/* ===== 图表 ===== */
+function prepCanvas(cv){const dpr=window.devicePixelRatio||1;const r=cv.getBoundingClientRect();cv.width=r.width*dpr;cv.height=r.height*dpr;const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,r.width,r.height);return{ctx,w:r.width,h:r.height}}
+function drawLine(cv,labels,values,color,unit){
+  const {ctx,w,h}=prepCanvas(cv);
+  if(!values.some(v=>v!=null)){ctx.fillStyle='#b0b8c4';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('暂无数据',w/2,h/2);return}
+  const pad={l:44,r:14,t:14,b:28};
+  const vs=values.map(v=>v==null?null:v);
+  const mn=Math.min(...vs.filter(v=>v!=null)),mx=Math.max(...vs.filter(v=>v!=null));
+  const lo=mn===mx?mn-1:mn-(mx-mn)*0.15,hi=mn===mx?mx+1:mx+(mx-mn)*0.15;
+  const X=i=>pad.l+i*(w-pad.l-pad.r)/Math.max(1,labels.length-1);
+  const Y=v=>pad.t+(1-(v-lo)/(hi-lo))*(h-pad.t-pad.b);
+  ctx.strokeStyle='#eef1f5';ctx.lineWidth=1;ctx.font='10px sans-serif';ctx.fillStyle='#9aa5b1';
+  for(let i=0;i<=3;i++){const y=pad.t+i*(h-pad.t-pad.b)/3;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.textAlign='right';ctx.fillText((lo+(hi-lo)*i/3).toFixed(1),pad.l-6,y+3)}
+  ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();
+  let started=false;
+  vs.forEach((v,i)=>{if(v==null){started=false;return}const x=X(i),y=Y(v);if(!started){ctx.moveTo(x,y);started=true}else ctx.lineTo(x,y)});
+  ctx.stroke();
+  ctx.fillStyle=color;
+  vs.forEach((v,i)=>{if(v==null)return;const x=X(i),y=Y(v);ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill()});
+  ctx.fillStyle='#6b7686';ctx.font='11px sans-serif';ctx.textAlign='center';
+  labels.forEach((l,i)=>{if(labels.length>12&&i%Math.ceil(labels.length/12)!==0)return;ctx.fillText(l,X(i),h-8)});
+  if(unit){ctx.textAlign='left';ctx.fillStyle='#b0b8c4';ctx.fillText(unit,pad.l,h-8)}
+}
+function drawBar(cv,labels,values,color){
+  const {ctx,w,h}=prepCanvas(cv);
+  if(!values.length){ctx.fillStyle='#b0b8c4';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('暂无数据',w/2,h/2);return}
+  const pad={l:34,r:10,t:14,b:28};
+  const mx=Math.max(...values,1);
+  const bw=Math.min(36,(w-pad.l-pad.r)/values.length*0.6);
+  ctx.strokeStyle='#eef1f5';ctx.lineWidth=1;ctx.font='10px sans-serif';ctx.fillStyle='#9aa5b1';
+  for(let i=0;i<=3;i++){const y=pad.t+i*(h-pad.t-pad.b)/3;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(Math.round(mx*(1-i/3)),pad.l-6,y+3)}
+  const step=(w-pad.l-pad.r)/values.length;
+  values.forEach((v,i)=>{
+    const x=pad.l+step*i+(step-bw)/2;
+    const bh=(v/mx)*(h-pad.t-pad.b);
+    ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,h-pad.b-bh,bw,bh,4);ctx.fill();
+    ctx.fillStyle='#6b7686';ctx.font='11px sans-serif';ctx.textAlign='center';ctx.fillText(labels[i],pad.l+step*i+step/2,h-8);
+  });
+}
+function drawWeightChart(){
+  const last30=db.body.filter(b=>{const d=new Date(b.date+'T00:00:00');return (Date.now()-d)/86400000<=31}).reverse();
+  drawLine(document.getElementById('chartWeight'),last30.map(b=>b.date.slice(5)),last30.map(b=>b.weight),'#e74c3c','kg');
+}
+function drawMuscleChart(){
+  const ym=new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0');
+  const cnt={};
+  db.workouts.filter(w=>w.date.startsWith(ym)).forEach(w=>{const m=guessMuscle(w.exercise);cnt[m]=(cnt[m]||0)+1});
+  const keys=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,6);
+  drawBar(document.getElementById('chartMuscle'),keys,keys.map(k=>cnt[k]),'#e74c3c');
+}
+function drawBodyChart(){
+  const list=db.body.slice().reverse();
+  drawLine(document.getElementById('chartBody'),list.map(b=>b.date.slice(5)),list.map(b=>b.weight),'#e74c3c','kg');
+}
+
+/* ===== 导出导入 ===== */
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='健身数据备份-'+today()+'.json';a.click();toast('已导出');
+}
+function importData(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(!d.workouts||!d.exercises||!d.body)throw 0;
+    if(confirm('导入将覆盖当前所有数据，确定继续？')){db=d;save();toast('导入成功');renderDash()}
+  }catch(e){toast('文件格式不正确')}};
+  r.readAsText(f);input.value='';
+}
+
+renderDash();
+buildWorkoutFilters();
+</script>
+</body>
+</html>

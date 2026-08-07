@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔥 习惯养成系统</title>
+<style>
+:root{--accent:#e67e22;--accent2:#ca6f1e}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6f9;color:#2c3e50;min-height:100vh}
+header{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header .logo{font-size:20px;font-weight:700;letter-spacing:1px}
+header .actions{display:flex;gap:8px}
+header button{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
+header button:hover{background:rgba(255,255,255,.3)}
+.tabs{display:flex;gap:6px;padding:12px 24px 0;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e8ecf1;position:sticky;top:0;z-index:10}
+.tabs button{border:none;background:transparent;padding:10px 16px;font-size:14px;color:#6b7686;cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+.tabs button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.tabpane{display:none}
+.tabpane.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card .label{font-size:12px;color:#9aa5b1;margin-bottom:6px}
+.card .value{font-size:23px;font-weight:700;color:#2c3e50}
+.card .sub{font-size:12px;color:#7f8c9b;margin-top:4px}
+.panel{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:18px}
+.panel h3{font-size:15px;margin-bottom:14px;color:#34495e;display:flex;justify-content:space-between;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:9px;cursor:pointer;font-size:13px;transition:.2s}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:#eef1f5;color:#34495e}
+.btn.danger{background:#fdecea;color:#c0392b}
+.btn.sm{padding:4px 10px;font-size:12px}
+.fab{position:fixed;right:28px;bottom:28px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:26px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50}
+.fab:hover{transform:scale(1.08)}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal{background:#fff;border-radius:16px;padding:22px;width:min(480px,92vw);max-height:88vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.modal h3{margin-bottom:16px;color:#2c3e50}
+.form-row{margin-bottom:13px}
+.form-row label{display:block;font-size:12px;color:#6b7686;margin-bottom:5px;font-weight:600}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1px solid #dde3ea;border-radius:9px;font-size:14px;outline:none;font-family:inherit}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(230,126,34,.12)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.hidden{display:none!important}
+#toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#2c3e50;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:200;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+#toast.show{opacity:1}
+.empty{text-align:center;color:#b0b8c4;padding:32px 0;font-size:13px}
+.habit-row{display:flex;align-items:center;gap:14px;background:#fff;border-radius:14px;padding:14px 18px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);transition:.2s}
+.habit-row:hover{box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.habit-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.habit-info{flex:1;min-width:0}
+.habit-info .hn{font-size:14.5px;font-weight:700;color:#2c3e50}
+.habit-info .hm{font-size:12px;color:#9aa5b1;margin-top:2px}
+.habit-streak{text-align:center;min-width:64px}
+.habit-streak b{font-size:19px;color:var(--accent)}
+.habit-streak span{display:block;font-size:11px;color:#9aa5b1}
+.habit-btn{width:44px;height:44px;border-radius:50%;border:2px solid #e8ecf1;background:#fff;font-size:19px;cursor:pointer;color:#16a085;transition:.2s;flex-shrink:0}
+.habit-btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.heat-grid{display:grid;grid-template-columns:repeat(14,1fr);gap:5px}
+.heat-cell{aspect-ratio:1;border-radius:4px;background:#eef1f5;position:relative;cursor:pointer}
+.heat-cell:hover::after{content:attr(data-tip);position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:#2c3e50;color:#fff;font-size:11px;padding:3px 8px;border-radius:6px;white-space:nowrap;z-index:10}
+.heat-cell.l1{background:#fde9d4}
+.heat-cell.l2{background:#f8c891}
+.heat-cell.l3{background:#f39c4b}
+.heat-cell.l4{background:#e67e22}
+.heat-cell.today{outline:2px solid #2c3e50}
+/* ---------- 优化：深色模式 / 打印 / 返回按钮 ---------- */
+header .backBtn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;text-decoration:none;font-size:13px;transition:.2s}
+header .backBtn:hover{background:rgba(255,255,255,.3)}
+body.dark{background:#12181f;color:#d5dce5}
+body.dark header{box-shadow:0 2px 8px rgba(0,0,0,.4)}
+body.dark .tabs{background:#161d26;border-bottom-color:#1f2a36}
+body.dark .tabs button{color:#8b98a9}
+body.dark .card,body.dark .panel{background:#1a222c;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+body.dark .card .value,body.dark .modal h3{color:#e6ecf3}
+body.dark .card .label,body.dark .panel h3{color:#9aa7b8}
+body.dark th{background:#1e2833;color:#9aa7b8;border-bottom-color:#273242}
+body.dark td{border-bottom-color:#202b37}
+body.dark tr:hover td{background:#1d2732}
+body.dark .btn.ghost{background:#27333f;color:#d5dce5}
+body.dark .form-row input,body.dark .form-row select,body.dark .form-row textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .modal{background:#1a222c}
+body.dark .modal-overlay{background:rgba(8,12,18,.6)}
+body.dark .filters select,body.dark .filters input,body.dark .filters input::placeholder{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .empty{color:#5c6a7a}
+body.dark .progress{background:#27333f}
+@media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🔥 习惯养成系统</div>
+  <div class="actions">
+    <a href="index.html" class="backBtn">🏠 总览</a>
+    <button onclick="toggleTheme()" class="themeBtn">🌙</button>
+    <button onclick="loadExample()">✨ 示例</button>
+    <button onclick="exportData()">📤 导出</button>
+    <button onclick="document.getElementById('file').click()">📥 导入</button>
+    <input type="file" id="file" accept=".json" class="hidden" onchange="importData(this)">
+  </div>
+</header>
+<nav class="tabs">
+  <button class="active" data-tab="dash" onclick="switchTab('dash')">今日打卡</button>
+  <button data-tab="habits" onclick="switchTab('habits')">习惯管理</button>
+  <button data-tab="heat" onclick="switchTab('heat')">月度热力图</button>
+</nav>
+<main>
+  <section id="tab-dash" class="tabpane active">
+    <div class="cards" id="dashCards"></div>
+    <div class="panel"><h3>今日打卡</h3><div id="checkList"></div></div>
+    <div class="panel"><h3>本周打卡记录</h3><div id="weekList"></div></div>
+  </section>
+  <section id="tab-habits" class="tabpane">
+    <div class="panel">
+      <h3>我的习惯<button class="btn sm" onclick="openHabit()">＋ 新建习惯</button></h3>
+      <div id="habitList"></div>
+    </div>
+  </section>
+  <section id="tab-heat" class="tabpane">
+    <div class="cards" id="heatCards"></div>
+    <div class="panel"><h3>本月打卡热力图</h3><div id="heatGrid"></div></div>
+    <div class="panel"><h3>各习惯本月完成率</h3><div id="heatRate"></div></div>
+  </section>
+</main>
+<button class="fab" onclick="openHabit()">＋</button>
+
+<div id="modalHabit" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="habitTitle">新建习惯</h3>
+    <div class="form-row"><label>习惯名称 *</label><input type="text" id="hName" placeholder="如：早起、喝水、阅读"></div>
+    <div class="form-row"><label>图标</label>
+      <select id="hIcon">
+        <option value="🌅">🌅 早起</option><option value="💧">💧 喝水</option><option value="📖">📖 阅读</option><option value="🏃">🏃 跑步</option><option value="💪">💪 健身</option><option value="🧘">🧘 冥想</option><option value="✍️">✍️ 写作</option><option value="🎸">🎸 练习</option><option value="😴">😴 早睡</option><option value="🍎">🍎 健康饮食</option><option value="📝">📝 复盘</option><option value="🎯">🎯 自定义</option>
+      </select>
+    </div>
+    <div class="form-row"><label>颜色</label><input type="color" id="hColor" value="#e67e22" style="height:40px;padding:4px"></div>
+    <div class="form-row"><label>目标说明（可选）</label><input type="text" id="hGoal" placeholder="如：每天 30 分钟"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modalHabit')">取消</button>
+      <button class="btn" onclick="saveHabit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+const KEY='habit_sys_v1';
+let db=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{habits:[],checks:{}}}catch(e){return{habits:[],checks:{}}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=t==='dark'?'☀️':'🌙')}
+function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
+applyTheme(localStorage.getItem('theme')||'light');
+function loadExample(){
+  if(!confirm('将用示例数据覆盖当前打卡记录，确定？'))return;
+  if(!db.habits.length){db.habits=[
+    {id:uid(),name:'早起',icon:'🌅',color:'#e67e22',goal:'7:00 前起床'},
+    {id:uid(),name:'喝水',icon:'💧',color:'#2980b9',goal:'每天 8 杯水'},
+    {id:uid(),name:'阅读',icon:'📖',color:'#8e44ad',goal:'每天 30 分钟'}
+  ]}
+  const ids=db.habits.map(h=>h.id);db.checks={};
+  for(let i=13;i>=0;i--){
+    const dt=new Date();dt.setDate(dt.getDate()-i);
+    const ds=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+    ids.forEach((id,idx)=>{const p=i<3?true:((i*7+idx*3)%10<7);if(p)db.checks[keyFor(id,ds)]=true});
+  }
+  save();renderDash();renderHabits();renderHeat();toast('已载入示例数据 ✨');
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+function keyFor(hid,date){return hid+'|'+date}
+
+if(!db.habits.length){
+  db.habits=[
+    {id:uid(),name:'早起',icon:'🌅',color:'#e67e22',goal:'7:00 前起床'},
+    {id:uid(),name:'喝水',icon:'💧',color:'#2980b9',goal:'每天 8 杯水'},
+    {id:uid(),name:'阅读',icon:'📖',color:'#8e44ad',goal:'每天 30 分钟'}
+  ];save();
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
+  if(name==='dash')renderDash();
+  if(name==='habits')renderHabits();
+  if(name==='heat')renderHeat();
+}
+function closeModal(id){document.getElementById(id).classList.add('hidden')}
+function isChecked(hid,date){return !!db.checks[keyFor(hid,date)]}
+
+/* ===== 习惯管理 ===== */
+function openHabit(id){
+  const h=id?db.habits.find(x=>x.id===id):null;
+  document.getElementById('habitTitle').textContent=h?'编辑习惯':'新建习惯';
+  document.getElementById('hName').value=h?h.name:'';
+  document.getElementById('hIcon').value=h?h.icon:'🎯';
+  document.getElementById('hColor').value=h?h.color:'#e67e22';
+  document.getElementById('hGoal').value=h?(h.goal||''):'';
+  document.getElementById('hName').dataset.editId=id||'';
+  document.getElementById('modalHabit').classList.remove('hidden');
+}
+function saveHabit(){
+  const name=document.getElementById('hName').value.trim();
+  if(!name){toast('请输入习惯名称');return}
+  const editId=document.getElementById('hName').dataset.editId;
+  const data={name,icon:document.getElementById('hIcon').value,color:document.getElementById('hColor').value,goal:document.getElementById('hGoal').value.trim()};
+  if(editId)Object.assign(db.habits.find(x=>x.id===editId),data);
+  else db.habits.push({id:uid(),...data});
+  save();closeModal('modalHabit');renderHabits();renderDash();renderHeat();toast(editId?'已保存':'已创建习惯');
+}
+function delHabit(id){
+  if(confirm('删除该习惯？打卡记录也会一并删除')){db.habits=db.habits.filter(h=>h.id!==id);Object.keys(db.checks).forEach(k=>{if(k.startsWith(id+'|'))delete db.checks[k]});save();renderHabits();renderDash();renderHeat();toast('已删除')}
+}
+function renderHabits(){
+  const el=document.getElementById('habitList');
+  if(!db.habits.length){el.innerHTML='<div class="empty">还没有习惯，点击「新建习惯」开始你的养成计划</div>';return}
+  el.innerHTML=db.habits.map(h=>{
+    const streak=calcStreak(h.id);
+    const total=totalDays(h.id);
+    return `<div class="habit-row">
+      <div class="habit-icon" style="background:${h.color}22">${h.icon}</div>
+      <div class="habit-info"><div class="hn">${esc(h.name)}</div><div class="hm">${esc(h.goal)||'每日坚持'} · 累计 ${total} 天</div></div>
+      <div class="habit-streak"><b>${streak}</b><span>连续天数</span></div>
+      <button class="btn sm ghost" onclick="openHabit('${h.id}')">✎</button>
+      <button class="btn sm danger" onclick="delHabit('${h.id}')">×</button>
+    </div>`;
+  }).join('');
+}
+function calcStreak(hid){
+  const d=new Date();
+  let streak=0;
+  while(true){
+    const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(!isChecked(hid,ds)){
+      if(streak===0&&ds!==today())break;
+      if(streak===0&&ds===today()){d.setDate(d.getDate()-1);continue}
+      break;
+    }
+    streak++;d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+function totalDays(hid){return Object.keys(db.checks).filter(k=>k.startsWith(hid+'|')).length}
+
+/* ===== 打卡 ===== */
+function toggleCheck(hid){
+  const k=keyFor(hid,today());
+  if(db.checks[k])delete db.checks[k];
+  else db.checks[k]=true;
+  save();renderDash();renderHabits();renderHeat();
+}
+function renderDash(){
+  const t=today();
+  const doneCount=db.habits.filter(h=>isChecked(h.id,t)).length;
+  const allDone=db.habits.length&&doneCount===db.habits.length;
+  const best=Math.max(0,...db.habits.map(h=>calcStreak(h.id)));
+  const monthRate=db.habits.length?Math.round(doneCount/db.habits.length*100):0;
+  document.getElementById('dashCards').innerHTML=`
+    <div class="card"><div class="label">今日打卡</div><div class="value">${doneCount}/${db.habits.length}</div><div class="sub">${allDone?'全部完成 🎉':'继续加油！'}</div></div>
+    <div class="card"><div class="label">今日完成率</div><div class="value">${monthRate}%</div><div class="sub">${t}</div></div>
+    <div class="card"><div class="label">最长连续</div><div class="value">${best} 天</div><div class="sub">🔥 坚持就是胜利</div></div>
+    <div class="card"><div class="label">累计打卡</div><div class="value">${Object.keys(db.checks).length}</div><div class="sub">总打卡次数</div></div>`;
+  const cl=document.getElementById('checkList');
+  if(!db.habits.length){cl.innerHTML='<div class="empty">还没有习惯，点击右下角 ＋ 创建</div>';return}
+  cl.innerHTML=db.habits.map(h=>{
+    const on=isChecked(h.id,t);
+    const streak=calcStreak(h.id);
+    return `<div class="habit-row" style="margin-bottom:10px">
+      <div class="habit-icon" style="background:${h.color}22">${h.icon}</div>
+      <div class="habit-info"><div class="hn">${esc(h.name)}</div><div class="hm">🔥 连续 ${streak} 天</div></div>
+      <button class="habit-btn ${on?'on':''}" onclick="toggleCheck('${h.id}')">${on?'✓':''}</button>
+    </div>`;
+  }).join('');
+  const wl=document.getElementById('weekList');
+  const days=[];const now=new Date();
+  for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);days.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'))}
+  const weekNames=['日','一','二','三','四','五','六'];
+  wl.innerHTML=`<table><tr><th>日期</th>${db.habits.map(h=>`<th>${h.icon}</th>`).join('')}</tr>
+  ${days.map(ds=>`<tr><td>${ds.slice(5)} ${weekNames[new Date(ds+'T00:00:00').getDay()]}</td>${db.habits.map(h=>`<td>${isChecked(h.id,ds)?'<b style="color:#16a085">✓</b>':'—'}</td>`).join('')}</tr>`).join('')}
+  </table>`;
+}
+
+/* ===== 热力图 ===== */
+function renderHeat(){
+  const ym=today().slice(0,7);
+  const daysInMonth=new Date(+ym.slice(0,4),+ym.slice(5,7),0).getDate();
+  const days=Array.from({length:daysInMonth},(_,i)=>ym+'-'+String(i+1).padStart(2,'0'));
+  const todayDay=+today().slice(8);
+  document.getElementById('heatCards').innerHTML=`
+    <div class="card"><div class="label">本月打卡总次数</div><div class="value">${db.habits.reduce((s,h)=>s+days.filter(d=>isChecked(h.id,d)).length,0)}</div><div class="sub">${ym}</div></div>
+    <div class="card"><div class="label">全勤天数</div><div class="value">${days.filter(d=>db.habits.length&&db.habits.every(h=>isChecked(h.id,d))).length}</div><div class="sub">所有习惯都完成的天数</div></div>
+    <div class="card"><div class="label">本月最佳</div><div class="value">${Math.max(0,...db.habits.map(h=>days.filter(d=>isChecked(h.id,d)).length))}</div><div class="sub">单个习惯最多打卡天数</div></div>`;
+  const grid=document.getElementById('heatGrid');
+  if(!db.habits.length){grid.innerHTML='<div class="empty">暂无习惯</div>';return}
+  grid.innerHTML='<div class="heat-grid">'+days.map(d=>{
+    const count=db.habits.filter(h=>isChecked(h.id,d)).length;
+    const level=count?Math.min(4,Math.ceil(count/db.habits.length*4)):0;
+    return `<div class="heat-cell ${level?'l'+level:''} ${d===today()?'today':''}" data-tip="${d} · ${count}/${db.habits.length} 个习惯" onclick="toggleDayAll('${d}')"></div>`;
+  }).join('')+'</div>';
+  const hr=document.getElementById('heatRate');
+  hr.innerHTML='<table><tr><th>习惯</th><th>打卡天数</th><th>完成率</th><th>进度</th></tr>'+db.habits.map(h=>{
+    const c=days.filter(d=>isChecked(h.id,d)).length;
+    const rate=Math.round(c/daysInMonth*100);
+    return `<tr><td>${h.icon} ${esc(h.name)}</td><td>${c}/${daysInMonth}</td><td>${rate}%</td><td style="min-width:160px"><div class="progress"><div style="width:${rate}%;background:${h.color}"></div></div></td></tr>`;
+  }).join('')+'</table>';
+}
+function toggleDayAll(ds){
+  if(ds!==today()){toast('只能打卡今天哦');return}
+  const allOn=db.habits.every(h=>isChecked(h.id,ds));
+  db.habits.forEach(h=>{db.checks[keyFor(h.id,ds)]=allOn?null:true;if(allOn)delete db.checks[keyFor(h.id,ds)]});
+  save();renderHeat();renderDash();
+}
+
+/* ===== 导出导入 ===== */
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='习惯数据备份-'+today()+'.json';a.click();toast('已导出');
+}
+function importData(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(!d.habits)throw 0;
+    if(confirm('导入将覆盖当前所有数据，确定继续？')){db=d;save();toast('导入成功');renderDash()}
+  }catch(e){toast('文件格式不正确')}};
+  r.readAsText(f);input.value='';
+}
+
+renderDash();
+</script>
+</body>
+</html>

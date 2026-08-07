@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✈️ 旅行规划系统</title>
+<style>
+:root{--accent:#3498db;--accent2:#2471a3}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6f9;color:#2c3e50;min-height:100vh}
+header{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header .logo{font-size:20px;font-weight:700;letter-spacing:1px}
+header .actions{display:flex;gap:8px}
+header button{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
+header button:hover{background:rgba(255,255,255,.3)}
+.tabs{display:flex;gap:6px;padding:12px 24px 0;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e8ecf1;position:sticky;top:0;z-index:10}
+.tabs button{border:none;background:transparent;padding:10px 16px;font-size:14px;color:#6b7686;cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+.tabs button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.tabpane{display:none}
+.tabpane.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card .label{font-size:12px;color:#9aa5b1;margin-bottom:6px}
+.card .value{font-size:23px;font-weight:700;color:#2c3e50}
+.card .sub{font-size:12px;color:#7f8c9b;margin-top:4px}
+.panel{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:18px}
+.panel h3{font-size:15px;margin-bottom:14px;color:#34495e;display:flex;justify-content:space-between;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+canvas{width:100%;height:220px;display:block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8fafc;color:#6b7686;text-align:left;padding:9px 10px;border-bottom:1px solid #e8ecf1;font-weight:600;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f1f4f8}
+tr:hover td{background:#fafcff}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:9px;cursor:pointer;font-size:13px;transition:.2s}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:#eef1f5;color:#34495e}
+.btn.danger{background:#fdecea;color:#c0392b}
+.btn.sm{padding:4px 10px;font-size:12px}
+.fab{position:fixed;right:28px;bottom:28px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:26px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50}
+.fab:hover{transform:scale(1.08)}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal{background:#fff;border-radius:16px;padding:22px;width:min(520px,92vw);max-height:88vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.modal h3{margin-bottom:16px;color:#2c3e50}
+.form-row{margin-bottom:13px}
+.form-row label{display:block;font-size:12px;color:#6b7686;margin-bottom:5px;font-weight:600}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1px solid #dde3ea;border-radius:9px;font-size:14px;outline:none;font-family:inherit}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,152,219,.12)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.hidden{display:none!important}
+#toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#2c3e50;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:200;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+#toast.show{opacity:1}
+.empty{text-align:center;color:#b0b8c4;padding:32px 0;font-size:13px}
+.trip-card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px;border-left:5px solid var(--accent);cursor:pointer;transition:.2s}
+.trip-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.1);transform:translateY(-2px)}
+.trip-card .tn{font-size:15px;font-weight:700;color:#2c3e50}
+.trip-card .tm{font-size:12px;color:#7f8c9b;margin:5px 0 10px}
+.itinerary-day{margin-bottom:16px}
+.itinerary-day .ih{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.itinerary-day .ih b{font-size:14px;color:#2c3e50}
+.itinerary-item{display:flex;align-items:center;gap:12px;background:#fff;border-radius:10px;padding:10px 14px;margin-bottom:7px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.itinerary-item .it{font-size:13px;font-weight:600;color:var(--accent);min-width:44px;font-variant-numeric:tabular-nums}
+.itinerary-item .in{flex:1;font-size:13.5px;color:#34495e}
+.itinerary-item .il{font-size:12px;color:#9aa5b1}
+.pack-item{display:flex;align-items:center;gap:12px;background:#fff;border-radius:10px;padding:11px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.pack-item .pc{width:24px;height:24px;border-radius:7px;border:2px solid #d5dbe3;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;flex-shrink:0}
+.pack-item .pc.on{background:var(--accent);border-color:var(--accent)}
+.pack-item .pn{flex:1;font-size:13.5px}
+.pack-item.packed .pn{text-decoration:line-through;color:#b0b8c4}
+.pack-cat{font-size:12.5px;color:#9aa5b1;margin:14px 0 8px;font-weight:700}
+/* ---------- 优化：深色模式 / 打印 / 返回按钮 ---------- */
+header .backBtn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;text-decoration:none;font-size:13px;transition:.2s}
+header .backBtn:hover{background:rgba(255,255,255,.3)}
+body.dark{background:#12181f;color:#d5dce5}
+body.dark header{box-shadow:0 2px 8px rgba(0,0,0,.4)}
+body.dark .tabs{background:#161d26;border-bottom-color:#1f2a36}
+body.dark .tabs button{color:#8b98a9}
+body.dark .card,body.dark .panel{background:#1a222c;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+body.dark .card .value,body.dark .modal h3{color:#e6ecf3}
+body.dark .card .label,body.dark .panel h3{color:#9aa7b8}
+body.dark th{background:#1e2833;color:#9aa7b8;border-bottom-color:#273242}
+body.dark td{border-bottom-color:#202b37}
+body.dark tr:hover td{background:#1d2732}
+body.dark .btn.ghost{background:#27333f;color:#d5dce5}
+body.dark .form-row input,body.dark .form-row select,body.dark .form-row textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .modal{background:#1a222c}
+body.dark .modal-overlay{background:rgba(8,12,18,.6)}
+body.dark .filters select,body.dark .filters input,body.dark .filters input::placeholder{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .empty{color:#5c6a7a}
+body.dark .progress{background:#27333f}
+@media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">✈️ 旅行规划系统</div>
+  <div class="actions">
+    <a href="index.html" class="backBtn">🏠 总览</a>
+    <button onclick="toggleTheme()" class="themeBtn">🌙</button>
+    <button onclick="loadExample()">✨ 示例</button>
+    <button onclick="exportData()">📤 导出</button>
+    <button onclick="document.getElementById('file').click()">📥 导入</button>
+    <input type="file" id="file" accept=".json" class="hidden" onchange="importData(this)">
+  </div>
+</header>
+<nav class="tabs">
+  <button class="active" data-tab="dash" onclick="switchTab('dash')">仪表盘</button>
+  <button data-tab="trips" onclick="switchTab('trips')">旅行计划</button>
+  <button data-tab="itinerary" onclick="switchTab('itinerary')">行程安排</button>
+  <button data-tab="budget" onclick="switchTab('budget')">预算管理</button>
+  <button data-tab="packing" onclick="switchTab('packing')">行李清单</button>
+</nav>
+<main>
+  <section id="tab-dash" class="tabpane active">
+    <div class="cards" id="dashCards"></div>
+    <div class="grid2">
+      <div class="panel"><h3>最近旅行</h3><div id="recentTrips"></div></div>
+      <div class="panel"><h3>预算概况</h3><div id="budgetOverview"></div></div>
+    </div>
+  </section>
+  <section id="tab-trips" class="tabpane">
+    <div class="panel">
+      <h3>旅行计划<button class="btn sm" onclick="openTrip()">＋ 新建旅行</button></h3>
+      <div id="tripList"></div>
+    </div>
+  </section>
+  <section id="tab-itinerary" class="tabpane">
+    <div class="panel">
+      <div class="filters" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <select id="fTripIt" onchange="renderItinerary()"></select>
+        <button class="btn sm" onclick="openItinerary()">＋ 添加行程</button>
+      </div>
+      <div id="itineraryList"></div>
+    </div>
+  </section>
+  <section id="tab-budget" class="tabpane">
+    <div class="cards" id="budgetCards"></div>
+    <div class="panel">
+      <div class="filters" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <select id="fTripBg" onchange="renderBudget()"></select>
+        <button class="btn sm" onclick="openBudget()">＋ 添加预算项</button>
+      </div>
+      <table id="budgetTable"></table>
+    </div>
+  </section>
+  <section id="tab-packing" class="tabpane">
+    <div class="cards" id="packCards"></div>
+    <div class="panel">
+      <div class="filters" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <select id="fTripPk" onchange="renderPacking()"></select>
+        <button class="btn sm" onclick="openPack()">＋ 添加物品</button>
+      </div>
+      <div id="packList"></div>
+    </div>
+  </section>
+</main>
+<button class="fab" onclick="openTrip()">＋</button>
+
+<div id="modalTrip" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="tripTitle">新建旅行</h3>
+    <div class="form-row"><label>目的地 *</label><input type="text" id="tpDest" placeholder="如：云南大理"></div>
+    <div class="form-row"><label>开始日期</label><input type="date" id="tpStart"></div>
+    <div class="form-row"><label>结束日期</label><input type="date" id="tpEnd"></div>
+    <div class="form-row"><label>总预算（元）</label><input type="number" id="tpBudget" min="0" placeholder="可选"></div>
+    <div class="form-row"><label>同行人</label><input type="text" id="tpWith" placeholder="如：家人、朋友（可选）"></div>
+    <div class="form-row"><label>备注</label><textarea id="tpNote" placeholder="攻略要点、注意事项等（可选）"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modalTrip')">取消</button>
+      <button class="btn" onclick="saveTrip()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalItinerary" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="itTitle">添加行程</h3>
+    <div class="form-row"><label>旅行</label><select id="itTrip"></select></div>
+    <div class="form-row"><label>日期</label><input type="date" id="itDate"></div>
+    <div class="form-row"><label>时间</label><input type="time" id="itTime" value="09:00"></div>
+    <div class="form-row"><label>安排 *</label><input type="text" id="itName" placeholder="如：参观大理古城"></div>
+    <div class="form-row"><label>地点</label><input type="text" id="itLoc" placeholder="如：大理市（可选）"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modalItinerary')">取消</button>
+      <button class="btn" onclick="saveItinerary()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalBudget" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="bgTitle">添加预算项</h3>
+    <div class="form-row"><label>旅行</label><select id="bgTrip"></select></div>
+    <div class="form-row"><label>分类</label><select id="bgCat"><option value="交通">交通</option><option value="住宿">住宿</option><option value="餐饮">餐饮</option><option value="门票">门票</option><option value="购物">购物</option><option value="其他">其他</option></select></div>
+    <div class="form-row"><label>项目名称</label><input type="text" id="bgName" placeholder="如：高铁票"></div>
+    <div class="form-row"><label>预算金额（元）</label><input type="number" id="bgBudget" min="0"></div>
+    <div class="form-row"><label>已花费（元）</label><input type="number" id="bgSpent" min="0"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modalBudget')">取消</button>
+      <button class="btn" onclick="saveBudget()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalPack" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="pkTitle">添加物品</h3>
+    <div class="form-row"><label>旅行</label><select id="pkTrip"></select></div>
+    <div class="form-row"><label>分类</label><select id="pkCat"><option value="证件">证件</option><option value="衣物">衣物</option><option value="洗漱">洗漱</option><option value="电子">电子</option><option value="药品">药品</option><option value="其他">其他</option></select></div>
+    <div class="form-row"><label>物品名称 *</label><input type="text" id="pkName" placeholder="如：护照、充电宝"></div>
+    <div class="form-row"><label>数量</label><input type="number" id="pkQty" min="1" value="1"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modalPack')">取消</button>
+      <button class="btn" onclick="savePack()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+const KEY='travel_sys_v1';
+let db=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{trips:[],itinerary:[],budgets:[],packing:[]}}catch(e){return{trips:[],itinerary:[],budgets:[],packing:[]}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=t==='dark'?'☀️':'🌙')}
+function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
+applyTheme(localStorage.getItem('theme')||'light');
+function loadExample(){
+  if(!confirm('将用示例数据覆盖当前旅行数据，确定？'))return;
+  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0');
+  const day=n=>y+'-'+m+'-'+String(n).padStart(2,'0');
+  const t1=uid(),t2=uid();
+  db.trips=[
+    {id:t1,dest:'云南·大理',start:day(12),end:day(16),budget:4000,with:'女朋友',note:'洱海环湖 + 古城漫步'},
+    {id:t2,dest:'重庆',start:day(25),end:day(28),budget:2500,with:'朋友',note:'火锅之旅'}
+  ];
+  db.itinerary=[
+    {id:uid(),trip:t1,date:day(12),time:'14:00',name:'抵达大理，入住客栈',loc:'大理古城'},
+    {id:uid(),trip:t1,date:day(13),time:'09:00',name:'洱海骑行',loc:'环海西路'},
+    {id:uid(),trip:t1,date:day(14),time:'10:00',name:'苍山索道',loc:'苍山'},
+    {id:uid(),trip:t2,date:day(25),time:'12:00',name:'洪崖洞打卡',loc:'渝中区'}
+  ];
+  db.budgets=[
+    {id:uid(),trip:t1,cat:'交通',name:'往返高铁',budget:1000,spent:1000},
+    {id:uid(),trip:t1,cat:'住宿',name:'客栈 4 晚',budget:1200,spent:0},
+    {id:uid(),trip:t1,cat:'餐饮',name:'日常吃饭',budget:1000,spent:200},
+    {id:uid(),trip:t1,cat:'门票',name:'景点门票',budget:800,spent:0},
+    {id:uid(),trip:t2,cat:'交通',name:'机票',budget:800,spent:0}
+  ];
+  db.packing=[
+    {id:uid(),trip:t1,cat:'证件',name:'身份证',qty:1,packed:true},
+    {id:uid(),trip:t1,cat:'衣物',name:'防晒衣',qty:1,packed:false},
+    {id:uid(),trip:t1,cat:'电子',name:'充电宝',qty:1,packed:false},
+    {id:uid(),trip:t1,cat:'其他',name:'防晒霜',qty:1,packed:false}
+  ];
+  save();renderDash();syncSelects();renderTrips();toast('已载入示例数据 ✨');
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+function tripName(id){const t=db.trips.find(x=>x.id===id);return t?t.dest:'（已删除旅行）'}
+function tripById(id){return db.trips.find(x=>x.id===id)}
+function fmtMoney(n){return '¥'+Number(n||0).toLocaleString()}
+
+function switchTab(name){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
+  if(name==='dash')renderDash();
+  if(name==='trips')renderTrips();
+  if(name==='itinerary')renderItinerary();
+  if(name==='budget')renderBudget();
+  if(name==='packing')renderPacking();
+}
+function closeModal(id){document.getElementById(id).classList.add('hidden')}
+function fillTripSel(sel,val){
+  sel.innerHTML='';
+  db.trips.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.dest+(t.start?' · '+t.start:'');sel.appendChild(o)});
+  if(val)sel.value=val;
+  return db.trips.length;
+}
+
+/* ===== 旅行计划 ===== */
+function openTrip(id){
+  const t=id?db.trips.find(x=>x.id===id):null;
+  document.getElementById('tripTitle').textContent=t?'编辑旅行':'新建旅行';
+  document.getElementById('tpDest').value=t?t.dest:'';
+  document.getElementById('tpStart').value=t?(t.start||''):'';
+  document.getElementById('tpEnd').value=t?(t.end||''):'';
+  document.getElementById('tpBudget').value=t?(t.budget||''):'';
+  document.getElementById('tpWith').value=t?(t.with||''):'';
+  document.getElementById('tpNote').value=t?(t.note||''):'';
+  document.getElementById('tpDest').dataset.editId=id||'';
+  document.getElementById('modalTrip').classList.remove('hidden');
+}
+function saveTrip(){
+  const dest=document.getElementById('tpDest').value.trim();
+  if(!dest){toast('请输入目的地');return}
+  const editId=document.getElementById('tpDest').dataset.editId;
+  const data={dest,start:document.getElementById('tpStart').value,end:document.getElementById('tpEnd').value,budget:document.getElementById('tpBudget').value?+document.getElementById('tpBudget').value:null,with:document.getElementById('tpWith').value.trim(),note:document.getElementById('tpNote').value.trim()};
+  if(editId)Object.assign(db.trips.find(x=>x.id===editId),data);
+  else db.trips.push({id:uid(),...data});
+  save();closeModal('modalTrip');renderTrips();renderDash();syncSelects();toast(editId?'已保存':'已创建旅行');
+}
+function delTrip(id){
+  if(confirm('删除该旅行？相关行程、预算、清单都会删除')){db.trips=db.trips.filter(t=>t.id!==id);db.itinerary=db.itinerary.filter(i=>i.trip!==id);db.budgets=db.budgets.filter(b=>b.trip!==id);db.packing=db.packing.filter(p=>p.trip!==id);save();renderTrips();renderDash();syncSelects();toast('已删除')}
+}
+function tripStatus(t){
+  if(!t.start&&!t.end)return['未定日期','#9aa5b1'];
+  if(t.start>today()){const d=Math.round((new Date(t.start+'T00:00:00')-new Date(today()+'T00:00:00'))/86400000);return[d+' 天后出发','#3498db']}
+  if(t.end&&t.end<today())return['已结束','#7f8c8d'];
+  return['进行中 🎉','#16a085'];
+}
+function renderTrips(){
+  const el=document.getElementById('tripList');
+  if(!db.trips.length){el.innerHTML='<div class="empty">还没有旅行计划，点击「新建旅行」开始规划</div>';return}
+  const sorted=[...db.trips].sort((a,b)=>(a.start||'9999')<(b.start||'9999')?-1:1);
+  el.innerHTML=sorted.map(t=>{
+    const [stText,stColor]=tripStatus(t);
+    const spent=db.budgets.filter(b=>b.trip===t.id).reduce((s,b)=>s+b.spent,0);
+    const budget=t.budget||0;
+    const days=t.start&&t.end?Math.round((new Date(t.end+'T00:00:00')-new Date(t.start+'T00:00:00'))/86400000)+1:null;
+    return `<div class="trip-card" style="border-left-color:${stColor}" onclick="openTrip('${t.id}')">
+      <div class="tn">✈️ ${esc(t.dest)} <span class="tag" style="background:${stColor}22;color:${stColor}">${stText}</span></div>
+      <div class="tm">${t.start?t.start:''}${t.end?' 至 '+t.end:''}${days?' · '+days+' 天':''}${t.with?' · 同行：'+esc(t.with):''}</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#5d6d7e">
+        <span>💰 预算 ${t.budget?fmtMoney(t.budget):'未设置'} · 已花 ${fmtMoney(spent)}</span>
+        <span>📅 行程 ${db.itinerary.filter(i=>i.trip===t.id).length} 项</span>
+        <span>🎒 清单 ${db.packing.filter(p=>p.trip===t.id).length} 件</span>
+      </div>
+      ${t.note?`<div style="font-size:12px;color:#9aa5b1;margin-top:6px">📝 ${esc(t.note)}</div>`:''}
+      <div style="margin-top:10px;text-align:right" onclick="event.stopPropagation()">
+        <button class="btn sm ghost" onclick="openTrip('${t.id}')">✎ 编辑</button>
+        <button class="btn sm danger" onclick="delTrip('${t.id}')">删除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== 行程 ===== */
+function openItinerary(id){
+  if(!db.trips.length){toast('请先创建旅行');return}
+  const i=id?db.itinerary.find(x=>x.id===id):null;
+  document.getElementById('itTitle').textContent=i?'编辑行程':'添加行程';
+  fillTripSel(document.getElementById('itTrip'),i?i.trip:db.trips[0].id);
+  document.getElementById('itDate').value=i?i.date:'';
+  document.getElementById('itTime').value=i?(i.time||'09:00'):'09:00';
+  document.getElementById('itName').value=i?i.name:'';
+  document.getElementById('itLoc').value=i?(i.loc||''):'';
+  document.getElementById('itName').dataset.editId=id||'';
+  document.getElementById('modalItinerary').classList.remove('hidden');
+}
+function saveItinerary(){
+  const name=document.getElementById('itName').value.trim();
+  if(!name){toast('请输入安排');return}
+  const editId=document.getElementById('itName').dataset.editId;
+  const data={trip:document.getElementById('itTrip').value,date:document.getElementById('itDate').value,time:document.getElementById('itTime').value,name,loc:document.getElementById('itLoc').value.trim()};
+  if(editId)Object.assign(db.itinerary.find(x=>x.id===editId),data);
+  else db.itinerary.push({id:uid(),...data});
+  save();closeModal('modalItinerary');renderItinerary();toast('已保存行程');
+}
+function delItinerary(id){db.itinerary=db.itinerary.filter(i=>i.id!==id);save();renderItinerary()}
+function renderItinerary(){
+  const trip=document.getElementById('fTripIt').value;
+  const sel=document.getElementById('fTripIt');
+  if(!sel.dataset.inited){db.trips.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.dest;sel.appendChild(o)});sel.dataset.inited='1'}
+  const items=db.itinerary.filter(i=>!trip||i.trip===trip);
+  const el=document.getElementById('itineraryList');
+  if(!db.trips.length){el.innerHTML='<div class="empty">请先创建旅行计划</div>';return}
+  if(!items.length){el.innerHTML='<div class="empty">该旅行还没有行程安排，点击「添加行程」</div>';return}
+  const byDate={};
+  items.forEach(i=>{if(!byDate[i.date])byDate[i.date]=[];byDate[i.date].push(i)});
+  const dates=Object.keys(byDate).sort();
+  el.innerHTML=dates.map(d=>{
+    const dow=['周日','周一','周二','周三','周四','周五','周六'][new Date(d+'T00:00:00').getDay()];
+    return `<div class="itinerary-day"><div class="ih"><b>${d} ${dow}</b><span style="font-size:12px;color:#9aa5b1">${byDate[d].length} 项安排</span></div>
+      ${byDate[d].sort((a,b)=>a.time<b.time?-1:1).map(i=>`<div class="itinerary-item"><span class="it">${i.time||'--:--'}</span><span class="in">${esc(i.name)}</span><span class="il">${i.loc?'📍 '+esc(i.loc):''}</span><button class="btn sm ghost" onclick="openItinerary('${i.id}')">✎</button><button class="btn sm danger" onclick="delItinerary('${i.id}')">×</button></div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+/* ===== 预算 ===== */
+function openBudget(id){
+  if(!db.trips.length){toast('请先创建旅行');return}
+  const b=id?db.budgets.find(x=>x.id===id):null;
+  document.getElementById('bgTitle').textContent=b?'编辑预算项':'添加预算项';
+  fillTripSel(document.getElementById('bgTrip'),b?b.trip:db.trips[0].id);
+  document.getElementById('bgCat').value=b?b.cat:'交通';
+  document.getElementById('bgName').value=b?b.name:'';
+  document.getElementById('bgBudget').value=b?(b.budget||''):'';
+  document.getElementById('bgSpent').value=b?(b.spent||0):'';
+  document.getElementById('bgName').dataset.editId=id||'';
+  document.getElementById('modalBudget').classList.remove('hidden');
+}
+function saveBudget(){
+  const editId=document.getElementById('bgName').dataset.editId;
+  const data={trip:document.getElementById('bgTrip').value,cat:document.getElementById('bgCat').value,name:document.getElementById('bgName').value.trim()||'未命名项目',budget:+document.getElementById('bgBudget').value||0,spent:+document.getElementById('bgSpent').value||0};
+  if(editId)Object.assign(db.budgets.find(x=>x.id===editId),data);
+  else db.budgets.push({id:uid(),...data});
+  save();closeModal('modalBudget');renderBudget();renderDash();toast('已保存预算');
+}
+function delBudget(id){db.budgets=db.budgets.filter(b=>b.id!==id);save();renderBudget();renderDash()}
+function renderBudget(){
+  const trip=document.getElementById('fTripBg').value;
+  const sel=document.getElementById('fTripBg');
+  if(!sel.dataset.inited){db.trips.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.dest;sel.appendChild(o)});sel.dataset.inited='1'}
+  const items=db.budgets.filter(b=>!trip||b.trip===trip);
+  const el=document.getElementById('budgetTable');
+  if(!items.length){el.innerHTML='<tr><td class="empty" colspan="6">暂无预算项，点击「添加预算项」</td></tr>';return}
+  const totalB=items.reduce((s,b)=>s+b.budget,0),totalS=items.reduce((s,b)=>s+b.spent,0);
+  const catMap={};
+  items.forEach(b=>{if(!catMap[b.cat])catMap[b.cat]={budget:0,spent:0};catMap[b.cat].budget+=b.budget;catMap[b.cat].spent+=b.spent});
+  el.innerHTML='<tr><th>分类</th><th>项目</th><th>预算</th><th>已花</th><th>剩余</th><th>进度</th><th></th></tr>'+
+    items.map(b=>{
+      const left=b.budget-b.spent;
+      const pct=b.budget?Math.min(100,Math.round(b.spent/b.budget*100)):0;
+      return `<tr><td><span class="tag" style="background:#eaf2fb;color:#2980b9">${b.cat}</span></td><td>${esc(b.name)}</td><td>${fmtMoney(b.budget)}</td><td>${fmtMoney(b.spent)}</td><td style="color:${left<0?'#c0392b':'#16a085'};font-weight:700">${fmtMoney(left)}</td><td style="min-width:120px"><div class="progress"><div style="width:${pct}%;background:${pct>100?'#c0392b':pct>80?'#e67e22':'#3498db'}"></div></div></td><td><button class="btn sm ghost" onclick="openBudget('${b.id}')">✎</button> <button class="btn sm danger" onclick="delBudget('${b.id}')">×</button></td></tr>`;
+    }).join('')+
+    `<tr style="background:#f8fafc;font-weight:700"><td>合计</td><td></td><td>${fmtMoney(totalB)}</td><td>${fmtMoney(totalS)}</td><td style="color:${totalB-totalS<0?'#c0392b':'#16a085'}">${fmtMoney(totalB-totalS)}</td><td colspan="2"></td></tr>`;
+  const cards=document.getElementById('budgetCards');
+  const tb=trip?tripById(trip):null;
+  cards.innerHTML=`
+    <div class="card"><div class="label">当前查看</div><div class="value">${trip?esc(tripName(trip)):'全部旅行'}</div><div class="sub">${items.length} 个预算项</div></div>
+    <div class="card"><div class="label">总预算</div><div class="value">${fmtMoney(totalB)}</div><div class="sub">${tb&&tb.budget?'旅行总预算 '+fmtMoney(tb.budget):''}</div></div>
+    <div class="card"><div class="label">已花费</div><div class="value">${fmtMoney(totalS)}</div><div class="sub">${totalB?Math.round(totalS/totalB*100):0}% 已使用</div></div>
+    <div class="card"><div class="label">剩余</div><div class="value" style="color:${totalB-totalS<0?'#c0392b':'#16a085'}">${fmtMoney(totalB-totalS)}</div><div class="sub">${totalB-totalS<0?'已超支 ⚠':'预算充足 ✅'}</div></div>`;
+}
+
+/* ===== 行李清单 ===== */
+function openPack(id){
+  if(!db.trips.length){toast('请先创建旅行');return}
+  const p=id?db.packing.find(x=>x.id===id):null;
+  document.getElementById('pkTitle').textContent=p?'编辑物品':'添加物品';
+  fillTripSel(document.getElementById('pkTrip'),p?p.trip:db.trips[0].id);
+  document.getElementById('pkCat').value=p?p.cat:'证件';
+  document.getElementById('pkName').value=p?p.name:'';
+  document.getElementById('pkQty').value=p?p.qty:1;
+  document.getElementById('pkName').dataset.editId=id||'';
+  document.getElementById('modalPack').classList.remove('hidden');
+}
+function savePack(){
+  const name=document.getElementById('pkName').value.trim();
+  if(!name){toast('请输入物品名称');return}
+  const editId=document.getElementById('pkName').dataset.editId;
+  const data={trip:document.getElementById('pkTrip').value,cat:document.getElementById('pkCat').value,name,qty:+document.getElementById('pkQty').value||1,packed:false};
+  if(editId){const p=db.packing.find(x=>x.id===editId);const oldPacked=p.packed;Object.assign(p,data);p.packed=oldPacked}
+  else db.packing.push({id:uid(),...data});
+  save();closeModal('modalPack');renderPacking();toast('已保存物品');
+}
+function delPack(id){db.packing=db.packing.filter(p=>p.id!==id);save();renderPacking()}
+function togglePack(id){const p=db.packing.find(x=>x.id===id);p.packed=!p.packed;save();renderPacking()}
+function renderPacking(){
+  const trip=document.getElementById('fTripPk').value;
+  const sel=document.getElementById('fTripPk');
+  if(!sel.dataset.inited){db.trips.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.dest;sel.appendChild(o)});sel.dataset.inited='1'}
+  const items=db.packing.filter(p=>!trip||p.trip===trip);
+  const el=document.getElementById('packList');
+  if(!db.trips.length){el.innerHTML='<div class="empty">请先创建旅行计划</div>';return}
+  const packedN=items.filter(p=>p.packed).length;
+  const cards=document.getElementById('packCards');
+  cards.innerHTML=`
+    <div class="card"><div class="label">物品总数</div><div class="value">${items.reduce((s,p)=>s+p.qty,0)}</div><div class="sub">${items.length} 个品类</div></div>
+    <div class="card"><div class="label">已打包</div><div class="value">${packedN}/${items.length}</div><div class="sub">${items.length?Math.round(packedN/items.length*100):0}%</div></div>
+    <div class="card"><div class="label">待打包</div><div class="value">${items.length-packedN}</div><div class="sub">${items.length-packedN?'收拾行李咯 🎒':'全部搞定！'}</div></div>`;
+  if(!items.length){el.innerHTML='<div class="empty">还没有物品，点击「添加物品」</div>';return}
+  const cats=['证件','衣物','洗漱','电子','药品','其他'];
+  const grouped=cats.map(c=>({c,items:items.filter(p=>p.cat===c)})).filter(g=>g.items.length);
+  el.innerHTML=grouped.map(g=>`<div class="pack-cat">🎒 ${g.c}（${g.items.length}）</div>`+g.items.map(p=>`<div class="pack-item ${p.packed?'packed':''}"><div class="pc ${p.packed?'on':''}" onclick="togglePack('${p.id}')">${p.packed?'✓':''}</div><div class="pn">${esc(p.name)}${p.qty>1?' ×'+p.qty:''}</div><button class="btn sm ghost" onclick="openPack('${p.id}')">✎</button><button class="btn sm danger" onclick="delPack('${p.id}')">×</button></div>`).join('')).join('');
+}
+
+/* ===== 仪表盘 ===== */
+function renderDash(){
+  const upcoming=[...db.trips].filter(t=>t.start&&t.start>=today()).sort((a,b)=>a.start<b.start?-1:1);
+  const next=upcoming[0];
+  const totalBudget=db.trips.reduce((s,t)=>s+(t.budget||0),0);
+  const totalSpent=db.budgets.reduce((s,b)=>s+b.spent,0);
+  const packingTodo=db.packing.filter(p=>!p.packed).length;
+  document.getElementById('dashCards').innerHTML=`
+    <div class="card"><div class="label">旅行计划</div><div class="value">${db.trips.length}</div><div class="sub">${db.trips.filter(t=>t.start&&t.start>=today()).length} 个待出发</div></div>
+    <div class="card"><div class="label">下次出发</div><div class="value">${next?Math.round((new Date(next.start+'T00:00:00')-new Date(today()+'T00:00:00'))/86400000):'—'}</div><div class="sub">${next?esc(next.dest)+' · '+next.start:'暂无计划'}</div></div>
+    <div class="card"><div class="label">总预算</div><div class="value">${fmtMoney(totalBudget)}</div><div class="sub">已花 ${fmtMoney(totalSpent)}</div></div>
+    <div class="card"><div class="label">待打包</div><div class="value">${packingTodo}</div><div class="sub">${db.packing.length} 件物品中</div></div>`;
+  const rt=document.getElementById('recentTrips');
+  if(!db.trips.length){rt.innerHTML='<div class="empty">还没有旅行计划</div>';return}
+  rt.innerHTML=db.trips.slice(0,5).map(t=>{
+    const [stText,stColor]=tripStatus(t);
+    return `<div class="trip-card" style="border-left-color:${stColor};margin-bottom:8px;padding:12px 14px" onclick="switchTab('trips')"><div class="tn" style="font-size:14px">✈️ ${esc(t.dest)} <span class="tag" style="background:${stColor}22;color:${stColor}">${stText}</span></div><div class="tm" style="margin:3px 0 0">${t.start||'日期未定'}${t.end?' 至 '+t.end:''}</div></div>`;
+  }).join('');
+  const bo=document.getElementById('budgetOverview');
+  if(!db.budgets.length){bo.innerHTML='<div class="empty">暂无预算记录</div>';return}
+  const catMap={};
+  db.budgets.forEach(b=>{catMap[b.cat]=(catMap[b.cat]||0)+b.spent});
+  const total=Object.values(catMap).reduce((s,v)=>s+v,0)||1;
+  const cats=['交通','住宿','餐饮','门票','购物','其他'];
+  const colors={'交通':'#3498db','住宿':'#8e44ad','餐饮':'#e67e22','门票':'#16a085','购物':'#e74c3c','其他':'#95a5a6'};
+  bo.innerHTML=cats.filter(c=>catMap[c]).map(c=>`<div style="margin-bottom:10px;display:flex;align-items:center;gap:10px"><span style="width:44px;font-size:12.5px;color:#5d6d7e">${c}</span><div class="progress" style="flex:1"><div style="width:${catMap[c]/total*100}%;background:${colors[c]}"></div></div><span style="font-size:12.5px;font-weight:700;min-width:64px;text-align:right">${fmtMoney(catMap[c])}</span></div>`).join('');
+}
+
+function syncSelects(){
+  ['fTripIt','fTripBg','fTripPk'].forEach(id=>{const s=document.getElementById(id);s.innerHTML='';db.trips.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.dest;s.appendChild(o)});s.dataset.inited='1'});
+}
+
+/* ===== 导出导入 ===== */
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='旅行数据备份-'+today()+'.json';a.click();toast('已导出');
+}
+function importData(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(!d.trips)throw 0;
+    if(confirm('导入将覆盖当前所有数据，确定继续？')){db=d;save();toast('导入成功');renderDash();syncSelects()}
+  }catch(e){toast('文件格式不正确')}};
+  r.readAsText(f);input.value='';
+}
+
+renderDash();
+</script>
+</body>
+</html>

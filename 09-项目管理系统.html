@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🗂️ 项目管理系统</title>
+<style>
+:root{--accent:#34495e;--accent2:#1f2d3d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6f9;color:#2c3e50;min-height:100vh}
+header{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header .logo{font-size:20px;font-weight:700;letter-spacing:1px}
+header .actions{display:flex;gap:8px}
+header button{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
+header button:hover{background:rgba(255,255,255,.3)}
+.tabs{display:flex;gap:6px;padding:12px 24px 0;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e8ecf1;position:sticky;top:0;z-index:10}
+.tabs button{border:none;background:transparent;padding:10px 16px;font-size:14px;color:#6b7686;cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+.tabs button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.tabpane{display:none}
+.tabpane.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card .label{font-size:12px;color:#9aa5b1;margin-bottom:6px}
+.card .value{font-size:23px;font-weight:700;color:#2c3e50}
+.card .sub{font-size:12px;color:#7f8c9b;margin-top:4px}
+.panel{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:18px}
+.panel h3{font-size:15px;margin-bottom:14px;color:#34495e;display:flex;justify-content:space-between;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8fafc;color:#6b7686;text-align:left;padding:9px 10px;border-bottom:1px solid #e8ecf1;font-weight:600;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f1f4f8}
+tr:hover td{background:#fafcff}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:9px;cursor:pointer;font-size:13px;transition:.2s}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:#eef1f5;color:#34495e}
+.btn.danger{background:#fdecea;color:#c0392b}
+.btn.sm{padding:4px 10px;font-size:12px}
+.fab{position:fixed;right:28px;bottom:28px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:26px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50}
+.fab:hover{transform:scale(1.08)}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal{background:#fff;border-radius:16px;padding:22px;width:min(520px,92vw);max-height:88vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.modal h3{margin-bottom:16px;color:#2c3e50}
+.form-row{margin-bottom:13px}
+.form-row label{display:block;font-size:12px;color:#6b7686;margin-bottom:5px;font-weight:600}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1px solid #dde3ea;border-radius:9px;font-size:14px;outline:none;font-family:inherit}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,73,94,.12)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.hidden{display:none!important}
+#toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#2c3e50;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:200;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+#toast.show{opacity:1}
+.empty{text-align:center;color:#b0b8c4;padding:32px 0;font-size:13px}
+.proj-card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px;border-left:5px solid var(--accent);cursor:pointer;transition:.2s}
+.proj-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.1);transform:translateY(-2px)}
+.proj-card .pn{font-size:15px;font-weight:700;color:#2c3e50;display:flex;align-items:center;gap:8px}
+.proj-card .pm{font-size:12px;color:#7f8c9b;margin:5px 0 10px}
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:860px){.kanban{grid-template-columns:1fr}}
+.kb-col{background:#f8fafc;border-radius:14px;padding:14px;min-height:150px}
+.kb-col h4{font-size:13.5px;color:#34495e;margin-bottom:12px;display:flex;justify-content:space-between}
+.kb-item{background:#fff;border-radius:10px;padding:10px 13px;margin-bottom:9px;box-shadow:0 1px 4px rgba(0,0,0,.07);font-size:13px;cursor:pointer}
+.kb-item:hover{box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.mile-item{display:flex;align-items:center;gap:14px;background:#fff;border-radius:12px;padding:13px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.mile-item .mdot{width:14px;height:14px;border-radius:50%;border:3px solid #bdc3c7;flex-shrink:0}
+.mile-item.done .mdot{background:var(--accent);border-color:var(--accent)}
+.mile-item.done .mn{text-decoration:line-through;color:#b0b8c4}
+.mile-item .mn{flex:1;font-size:14px;font-weight:600;color:#2c3e50}
+/* ---------- 优化：深色模式 / 打印 / 返回按钮 ---------- */
+header .backBtn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;text-decoration:none;font-size:13px;transition:.2s}
+header .backBtn:hover{background:rgba(255,255,255,.3)}
+body.dark{background:#12181f;color:#d5dce5}
+body.dark header{box-shadow:0 2px 8px rgba(0,0,0,.4)}
+body.dark .tabs{background:#161d26;border-bottom-color:#1f2a36}
+body.dark .tabs button{color:#8b98a9}
+body.dark .card,body.dark .panel{background:#1a222c;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+body.dark .card .value,body.dark .modal h3{color:#e6ecf3}
+body.dark .card .label,body.dark .panel h3{color:#9aa7b8}
+body.dark th{background:#1e2833;color:#9aa7b8;border-bottom-color:#273242}
+body.dark td{border-bottom-color:#202b37}
+body.dark tr:hover td{background:#1d2732}
+body.dark .btn.ghost{background:#27333f;color:#d5dce5}
+body.dark .form-row input,body.dark .form-row select,body.dark .form-row textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .modal{background:#1a222c}
+body.dark .modal-overlay{background:rgba(8,12,18,.6)}
+body.dark .filters select,body.dark .filters input,body.dark .filters input::placeholder{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .empty{color:#5c6a7a}
+body.dark .progress{background:#27333f}
+@media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🗂️ 项目管理系统</div>
+  <div class="actions">
+    <a href="index.html" class="backBtn">🏠 总览</a>
+    <button onclick="toggleTheme()" class="themeBtn">🌙</button>
+    <button onclick="loadExample()">✨ 示例</button>
+    <button onclick="exportData()">📤 导出</button>
+    <button onclick="document.getElementById('file').click()">📥 导入</button>
+    <input type="file" id="file" accept=".json" class="hidden" onchange="importData(this)">
+  </div>
+</header>
+<nav class="tabs">
+  <button class="active" data-tab="dash" onclick="switchTab('dash')">仪表盘</button>
+  <button data-tab="projects" onclick="switchTab('projects')">项目列表</button>
+  <button data-tab="tasks" onclick="switchTab('tasks')">任务看板</button>
+  <button data-tab="milestones" onclick="switchTab('milestones')">里程碑</button>
+</nav>
+<main>
+  <section id="tab-dash" class="tabpane active">
+    <div class="cards" id="dashCards"></div>
+    <div class="grid2">
+      <div class="panel"><h3>各项目进度</h3><div id="projProgress"></div></div>
+      <div class="panel"><h3>任务状态分布</h3><div id="taskDist"></div></div>
+    </div>
+    <div class="panel"><h3>即将到期的里程碑</h3><div id="dueMiles"></div></div>
+  </section>
+  <section id="tab-projects" class="tabpane">
+    <div class="panel">
+      <h3>全部项目<button class="btn sm" onclick="openProject()">＋ 新建项目</button></h3>
+      <div id="projectList"></div>
+    </div>
+  </section>
+  <section id="tab-tasks" class="tabpane">
+    <div class="panel">
+      <div class="filters" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <select id="fProj" onchange="renderTasks()"><option value="">全部项目</option></select>
+        <button class="btn sm" onclick="openTask()">＋ 添加任务</button>
+      </div>
+      <div class="kanban" id="taskBoard"></div>
+    </div>
+  </section>
+  <section id="tab-milestones" class="tabpane">
+    <div class="panel">
+      <h3>里程碑节点<button class="btn sm" onclick="openMilestone()">＋ 添加里程碑</button></h3>
+      <div id="mileList"></div>
+    </div>
+  </section>
+</main>
+<button class="fab" onclick="openProject()">＋</button>
+
+<div id="modalProject" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="projTitle">新建项目</h3>
+    <div class="form-row"><label>项目名称 *</label><input type="text" id="pName" placeholder="如：公司官网改版"></div>
+    <div class="form-row"><label>状态</label><select id="pStatus"><option value="planning">规划中</option><option value="active">进行中</option><option value="done">已完成</option><option value="paused">已暂停</option></select></div>
+    <div class="form-row"><label>优先级</label><select id="pPriority"><option value="高">高</option><option value="中" selected>中</option><option value="低">低</option></select></div>
+    <div class="form-row"><label>开始日期</label><input type="date" id="pStart"></div>
+    <div class="form-row"><label>截止日期</label><input type="date" id="pEnd"></div>
+    <div class="form-row"><label>项目说明</label><textarea id="pDesc" placeholder="项目目标、范围等（可选）"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modalProject')">取消</button>
+      <button class="btn" onclick="saveProject()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalTask" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="taskTitle">添加任务</h3>
+    <div class="form-row"><label>所属项目</label><select id="tProj"></select></div>
+    <div class="form-row"><label>任务名称 *</label><input type="text" id="tName" placeholder="任务内容"></div>
+    <div class="form-row"><label>状态</label><select id="tStatus"><option value="todo">待办</option><option value="doing">进行中</option><option value="done">已完成</option></select></div>
+    <div class="form-row"><label>优先级</label><select id="tPriority"><option value="高">高</option><option value="中" selected>中</option><option value="低">低</option></select></div>
+    <div class="form-row"><label>负责人</label><input type="text" id="tOwner" placeholder="可选"></div>
+    <div class="form-row"><label>截止日期</label><input type="date" id="tDue"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modalTask')">取消</button>
+      <button class="btn" onclick="saveTask()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalMile" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="mileTitle">添加里程碑</h3>
+    <div class="form-row"><label>所属项目</label><select id="mProj"></select></div>
+    <div class="form-row"><label>名称 *</label><input type="text" id="mName" placeholder="如：原型设计完成"></div>
+    <div class="form-row"><label>日期</label><input type="date" id="mDate"></div>
+    <div class="form-row"><label>状态</label><select id="mStatus"><option value="todo">未完成</option><option value="done">已完成</option></select></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modalMile')">取消</button>
+      <button class="btn" onclick="saveMilestone()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+const KEY='project_sys_v1';
+let db=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{projects:[],tasks:[],milestones:[]}}catch(e){return{projects:[],tasks:[],milestones:[]}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=t==='dark'?'☀️':'🌙')}
+function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
+applyTheme(localStorage.getItem('theme')||'light');
+function loadExample(){
+  if(!confirm('将用示例数据覆盖当前项目数据，确定？'))return;
+  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0');
+  const day=n=>y+'-'+m+'-'+String(n).padStart(2,'0');
+  const p1=uid(),p2=uid();
+  db.projects=[
+    {id:p1,name:'个人网站改版',status:'active',priority:'高',start:day(1),end:day(20),desc:'全新 UI + 响应式适配'},
+    {id:p2,name:'读书计划 Q3',status:'planning',priority:'中',start:day(5),end:'',desc:'每周 2 本'}
+  ];
+  db.tasks=[
+    {id:uid(),project:p1,name:'首页设计稿',status:'done',priority:'高',owner:'我',due:day(3)},
+    {id:uid(),project:p1,name:'前端开发',status:'doing',priority:'高',owner:'我',due:day(12)},
+    {id:uid(),project:p1,name:'移动端适配',status:'todo',priority:'中',owner:'我',due:day(18)},
+    {id:uid(),project:p1,name:'上线部署',status:'todo',priority:'高',owner:'我',due:day(20)},
+    {id:uid(),project:p2,name:'书单筛选',status:'doing',priority:'中',owner:'我',due:day(7)},
+    {id:uid(),project:p2,name:'每周读书笔记',status:'todo',priority:'低',owner:'我',due:''}
+  ];
+  db.milestones=[
+    {id:uid(),project:p1,name:'设计评审通过',date:day(4),status:'done'},
+    {id:uid(),project:p1,name:'功能开发完成',date:day(15),status:'todo'},
+    {id:uid(),project:p2,name:'读完 6 本书',date:day(30),status:'todo'}
+  ];
+  save();renderDash();renderProjects();renderTasks();renderMiles();toast('已载入示例数据 ✨');
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+function projName(id){const p=db.projects.find(x=>x.id===id);return p?p.name:'（已删除项目）'}
+const pStatusMap={planning:['规划中','#9aa5b1'],active:['进行中','#2980b9'],done:['已完成','#16a085'],paused:['已暂停','#b7950b']};
+const tStatusMap={todo:['待办','#9aa5b1'],doing:['进行中','#2980b9'],done:['已完成','#16a085']};
+const priCls={高:'p-h',中:'p-m',低:'p-l'};
+
+function switchTab(name){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
+  if(name==='dash')renderDash();
+  if(name==='projects')renderProjects();
+  if(name==='tasks')renderTasks();
+  if(name==='milestones')renderMiles();
+}
+function closeModal(id){document.getElementById(id).classList.add('hidden')}
+
+/* ===== 项目 ===== */
+function openProject(id){
+  const p=id?db.projects.find(x=>x.id===id):null;
+  document.getElementById('projTitle').textContent=p?'编辑项目':'新建项目';
+  document.getElementById('pName').value=p?p.name:'';
+  document.getElementById('pStatus').value=p?p.status:'planning';
+  document.getElementById('pPriority').value=p?p.priority:'中';
+  document.getElementById('pStart').value=p?(p.start||''):'';
+  document.getElementById('pEnd').value=p?(p.end||''):'';
+  document.getElementById('pDesc').value=p?(p.desc||''):'';
+  document.getElementById('pName').dataset.editId=id||'';
+  document.getElementById('modalProject').classList.remove('hidden');
+}
+function saveProject(){
+  const name=document.getElementById('pName').value.trim();
+  if(!name){toast('请输入项目名称');return}
+  const editId=document.getElementById('pName').dataset.editId;
+  const data={name,status:document.getElementById('pStatus').value,priority:document.getElementById('pPriority').value,start:document.getElementById('pStart').value,end:document.getElementById('pEnd').value,desc:document.getElementById('pDesc').value.trim()};
+  if(editId)Object.assign(db.projects.find(x=>x.id===editId),data);
+  else db.projects.push({id:uid(),...data});
+  save();closeModal('modalProject');renderProjects();renderDash();toast(editId?'已保存':'已创建项目');
+}
+function delProject(id){
+  if(confirm('删除该项目？其任务和里程碑也会一并删除')){db.projects=db.projects.filter(p=>p.id!==id);db.tasks=db.tasks.filter(t=>t.project!==id);db.milestones=db.milestones.filter(m=>m.project!==id);save();renderProjects();renderTasks();renderMiles();renderDash();toast('已删除')}
+}
+function projProgress(p){
+  const tasks=db.tasks.filter(t=>t.project===p.id);
+  if(!tasks.length)return 0;
+  return Math.round(tasks.filter(t=>t.status==='done').length/tasks.length*100);
+}
+function renderProjects(){
+  const el=document.getElementById('projectList');
+  if(!db.projects.length){el.innerHTML='<div class="empty">还没有项目，点击「新建项目」开始</div>';return}
+  const sortOrder={高:0,中:1,低:2};
+  const list=[...db.projects].sort((a,b)=>(sortOrder[a.priority]??1)-(sortOrder[b.priority]??1));
+  el.innerHTML=list.map(p=>{
+    const [stText,stColor]=pStatusMap[p.status];
+    const prog=projProgress(p);
+    const taskN=db.tasks.filter(t=>t.project===p.id).length;
+    const doneN=db.tasks.filter(t=>t.project===p.id&&t.status==='done').length;
+    return `<div class="proj-card" style="border-left-color:${p.status==='done'?'#16a085':p.status==='active'?'#2980b9':p.status==='paused'?'#b7950b':'#9aa5b1'}" onclick="openProject('${p.id}')">
+      <div class="pn">${esc(p.name)} <span class="tag" style="background:${stColor}22;color:${stColor}">${stText}</span> <span class="tag ${priCls[p.priority]}">${p.priority}优先级</span></div>
+      <div class="pm">${p.start?p.start+' 至 ':''}${p.end||'未设截止'} · 任务 ${doneN}/${taskN}${p.desc?' · '+esc(p.desc):''}</div>
+      <div style="display:flex;align-items:center;gap:12px"><div class="progress" style="flex:1"><div style="width:${prog}%;background:${p.status==='done'?'#16a085':'#2980b9'}"></div></div><span style="font-size:13px;font-weight:700;color:#2c3e50">${prog}%</span></div>
+      <div style="margin-top:10px;text-align:right" onclick="event.stopPropagation()">
+        <button class="btn sm ghost" onclick="openProject('${p.id}')">✎ 编辑</button>
+        <button class="btn sm danger" onclick="delProject('${p.id}')">删除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== 任务 ===== */
+function fillProjSel(sel,val){
+  sel.innerHTML='';
+  db.projects.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o)});
+  if(val)sel.value=val;
+  return db.projects.length;
+}
+function openTask(id){
+  if(!db.projects.length){toast('请先创建项目');return}
+  const t=id?db.tasks.find(x=>x.id===id):null;
+  document.getElementById('taskTitle').textContent=t?'编辑任务':'添加任务';
+  fillProjSel(document.getElementById('tProj'),t?t.project:db.projects[0].id);
+  document.getElementById('tName').value=t?t.name:'';
+  document.getElementById('tStatus').value=t?t.status:'todo';
+  document.getElementById('tPriority').value=t?t.priority:'中';
+  document.getElementById('tOwner').value=t?(t.owner||''):'';
+  document.getElementById('tDue').value=t?(t.due||''):'';
+  document.getElementById('tName').dataset.editId=id||'';
+  document.getElementById('modalTask').classList.remove('hidden');
+}
+function saveTask(){
+  const name=document.getElementById('tName').value.trim();
+  if(!name){toast('请输入任务名称');return}
+  const editId=document.getElementById('tName').dataset.editId;
+  const data={project:document.getElementById('tProj').value,name,status:document.getElementById('tStatus').value,priority:document.getElementById('tPriority').value,owner:document.getElementById('tOwner').value.trim(),due:document.getElementById('tDue').value};
+  if(editId)Object.assign(db.tasks.find(x=>x.id===editId),data);
+  else db.tasks.push({id:uid(),...data});
+  save();closeModal('modalTask');renderTasks();renderProjects();renderDash();toast(editId?'已保存':'已添加任务');
+}
+function delTask(id){db.tasks=db.tasks.filter(t=>t.id!==id);save();renderTasks();renderProjects();renderDash()}
+function toggleTaskStatus(id){
+  const t=db.tasks.find(x=>x.id===id);if(!t)return;
+  const order=['todo','doing','done'];
+  t.status=order[(order.indexOf(t.status)+1)%3];
+  save();renderTasks();renderProjects();renderDash();
+}
+function renderTasks(){
+  const pf=document.getElementById('fProj').value;
+  const sel=document.getElementById('fProj');
+  if(!sel.dataset.inited){db.projects.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o)});sel.dataset.inited='1'}
+  const list=db.tasks.filter(t=>!pf||t.project===pf);
+  const board=document.getElementById('taskBoard');
+  const sortOrder={高:0,中:1,低:2};
+  board.innerHTML=Object.entries(tStatusMap).map(([k,[name,color]])=>{
+    const items=list.filter(t=>t.status===k).sort((a,b)=>(sortOrder[a.priority]??1)-(sortOrder[b.priority]??1));
+    return `<div class="kb-col"><h4>${name}<span style="color:#9aa5b1">${items.length}</span></h4>
+      ${items.length?items.map(t=>`<div class="kb-item" onclick="openTask('${t.id}')" style="border-left:3px solid ${t.priority==='高'?'#c0392b':t.priority==='中'?'#f39c12':'#2980b9'}">
+        <b>${esc(t.name)}</b>
+        <div style="font-size:11.5px;color:#9aa5b1;margin-top:4px">📁 ${esc(projName(t.project))}${t.owner?' · 👤 '+esc(t.owner):''}${t.due?' · 📅'+t.due:''}</div>
+        <div style="margin-top:6px"><button class="btn sm ghost" style="padding:2px 8px" onclick="event.stopPropagation();toggleTaskStatus('${t.id}')">→ 下一步</button></div>
+      </div>`).join(''):'<div style="color:#b0b8c4;font-size:12.5px;text-align:center;padding:16px 0">暂无任务</div>'}
+    </div>`;
+  }).join('');
+}
+
+/* ===== 里程碑 ===== */
+function openMilestone(id){
+  if(!db.projects.length){toast('请先创建项目');return}
+  const m=id?db.milestones.find(x=>x.id===id):null;
+  document.getElementById('mileTitle').textContent=m?'编辑里程碑':'添加里程碑';
+  fillProjSel(document.getElementById('mProj'),m?m.project:db.projects[0].id);
+  document.getElementById('mName').value=m?m.name:'';
+  document.getElementById('mDate').value=m?(m.date||''):'';
+  document.getElementById('mStatus').value=m?m.status:'todo';
+  document.getElementById('mName').dataset.editId=id||'';
+  document.getElementById('modalMile').classList.remove('hidden');
+}
+function saveMilestone(){
+  const name=document.getElementById('mName').value.trim();
+  if(!name){toast('请输入里程碑名称');return}
+  const editId=document.getElementById('mName').dataset.editId;
+  const data={project:document.getElementById('mProj').value,name,date:document.getElementById('mDate').value,status:document.getElementById('mStatus').value};
+  if(editId)Object.assign(db.milestones.find(x=>x.id===editId),data);
+  else db.milestones.push({id:uid(),...data});
+  save();closeModal('modalMile');renderMiles();renderDash();toast(editId?'已保存':'已添加里程碑');
+}
+function delMile(id){db.milestones=db.milestones.filter(m=>m.id!==id);save();renderMiles();renderDash()}
+function toggleMile(id){const m=db.milestones.find(x=>x.id===id);m.status=m.status==='done'?'todo':'done';save();renderMiles();renderDash()}
+function renderMiles(){
+  const el=document.getElementById('mileList');
+  if(!db.milestones.length){el.innerHTML='<div class="empty">还没有里程碑，点击「添加里程碑」规划节点</div>';return}
+  const sorted=[...db.milestones].sort((a,b)=>((a.date||'9999')<(b.date||'9999'))?-1:1);
+  el.innerHTML=sorted.map(m=>{
+    const overdue=m.date&&m.date<today()&&m.status!=='done';
+    return `<div class="mile-item ${m.status==='done'?'done':''}" style="${overdue?'border-left:4px solid #c0392b':''}">
+      <div class="mdot"></div>
+      <div class="mn">${esc(m.name)}</div>
+      <span style="font-size:12px;color:#9aa5b1">📁 ${esc(projName(m.project))}</span>
+      <span style="font-size:12px;color:${overdue?'#c0392b':'#9aa5b1'}">${m.date||'未设日期'}${overdue?' ⚠':''}</span>
+      <button class="btn sm ghost" onclick="toggleMile('${m.id}')">${m.status==='done'?'标记未完成':'✓ 完成'}</button>
+      <button class="btn sm ghost" onclick="openMilestone('${m.id}')">✎</button>
+      <button class="btn sm danger" onclick="delMile('${m.id}')">×</button>
+    </div>`;
+  }).join('');
+}
+
+/* ===== 仪表盘 ===== */
+function renderDash(){
+  const active=db.projects.filter(p=>p.status==='active');
+  const doneP=db.projects.filter(p=>p.status==='done');
+  const overdueMiles=db.milestones.filter(m=>m.date&&m.date<today()&&m.status!=='done');
+  const dueSoon=db.milestones.filter(m=>{const d=(new Date(m.date+'T00:00:00')-new Date(today()+'T00:00:00'))/86400000;return m.status!=='done'&&m.date&&d>=0&&d<=7});
+  const doneTasks=db.tasks.filter(t=>t.status==='done').length;
+  const allTasks=db.tasks.length;
+  document.getElementById('dashCards').innerHTML=`
+    <div class="card"><div class="label">项目总数</div><div class="value">${db.projects.length}</div><div class="sub">进行中 ${active.length} · 已完成 ${doneP.length}</div></div>
+    <div class="card"><div class="label">任务完成率</div><div class="value">${allTasks?Math.round(doneTasks/allTasks*100):0}%</div><div class="sub">${doneTasks}/${allTasks} 个任务</div></div>
+    <div class="card"><div class="label">里程碑</div><div class="value">${db.milestones.filter(m=>m.status==='done').length}/${db.milestones.length}</div><div class="sub">${dueSoon.length} 个 7 天内到期</div></div>
+    <div class="card"><div class="label">逾期里程碑</div><div class="value">${overdueMiles.length}</div><div class="sub">${overdueMiles.length?'需要关注 ⚠':'一切正常 ✅'}</div></div>`;
+  const pp=document.getElementById('projProgress');
+  if(!db.projects.length){pp.innerHTML='<div class="empty">暂无项目</div>';return}
+  pp.innerHTML=db.projects.map(p=>{
+    const prog=projProgress(p);
+    return `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span style="color:#34495e;font-weight:600">${esc(p.name)}</span><span style="color:#7f8c9b">${prog}%</span></div><div class="progress"><div style="width:${prog}%;background:${p.status==='done'?'#16a085':'#2980b9'}"></div></div></div>`;
+  }).join('');
+  const td=document.getElementById('taskDist');
+  const cnt={todo:0,doing:0,done:0};
+  db.tasks.forEach(t=>cnt[t.status]++);
+  const total=db.tasks.length||1;
+  td.innerHTML=Object.entries(tStatusMap).map(([k,[name,color]])=>`<div style="margin-bottom:10px;display:flex;align-items:center;gap:10px"><span style="width:56px;font-size:12.5px;color:#5d6d7e">${name}</span><div class="progress" style="flex:1"><div style="width:${cnt[k]/total*100}%;background:${color}"></div></div><span style="font-size:12.5px;font-weight:700;min-width:30px;text-align:right">${cnt[k]}</span></div>`).join('');
+  const dm=document.getElementById('dueMiles');
+  const miles=[...db.milestones.filter(m=>m.status!=='done'&&m.date)].sort((a,b)=>a.date<b.date?-1:1).slice(0,6);
+  dm.innerHTML=miles.length?miles.map(m=>`<div class="mile-item"><div class="mdot"></div><div class="mn">${esc(m.name)}</div><span style="font-size:12px;color:#9aa5b1">${esc(projName(m.project))}</span><span style="font-size:12px;color:${m.date<today()?'#c0392b':'#e67e22'}">${m.date}${m.date<today()?' ⚠':''}</span></div>`).join(''):'<div class="empty">没有待完成的里程碑</div>';
+}
+
+/* ===== 导出导入 ===== */
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='项目数据备份-'+today()+'.json';a.click();toast('已导出');
+}
+function importData(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(!d.projects)throw 0;
+    if(confirm('导入将覆盖当前所有数据，确定继续？')){db=d;save();toast('导入成功');renderDash()}
+  }catch(e){toast('文件格式不正确')}};
+  r.readAsText(f);input.value='';
+}
+
+renderDash();
+</script>
+</body>
+</html>

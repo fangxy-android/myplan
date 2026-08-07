@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⏰ 时间管理系统</title>
+<style>
+:root{--accent:#f39c12;--accent2:#d68910}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6f9;color:#2c3e50;min-height:100vh}
+header{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header .logo{font-size:20px;font-weight:700;letter-spacing:1px}
+header .actions{display:flex;gap:8px}
+header button{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
+header button:hover{background:rgba(255,255,255,.3)}
+.tabs{display:flex;gap:6px;padding:12px 24px 0;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e8ecf1;position:sticky;top:0;z-index:10}
+.tabs button{border:none;background:transparent;padding:10px 16px;font-size:14px;color:#6b7686;cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+.tabs button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.tabpane{display:none}
+.tabpane.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card .label{font-size:12px;color:#9aa5b1;margin-bottom:6px}
+.card .value{font-size:23px;font-weight:700;color:#2c3e50}
+.card .sub{font-size:12px;color:#7f8c9b;margin-top:4px}
+.panel{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:18px}
+.panel h3{font-size:15px;margin-bottom:14px;color:#34495e;display:flex;justify-content:space-between;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+canvas{width:100%;height:220px;display:block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8fafc;color:#6b7686;text-align:left;padding:9px 10px;border-bottom:1px solid #e8ecf1;font-weight:600;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f1f4f8}
+tr:hover td{background:#fafcff}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:9px;cursor:pointer;font-size:13px;transition:.2s}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:#eef1f5;color:#34495e}
+.btn.danger{background:#fdecea;color:#c0392b}
+.btn.sm{padding:4px 10px;font-size:12px}
+.fab{position:fixed;right:28px;bottom:28px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:26px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50}
+.fab:hover{transform:scale(1.08)}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal{background:#fff;border-radius:16px;padding:22px;width:min(480px,92vw);max-height:88vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.modal h3{margin-bottom:16px;color:#2c3e50}
+.form-row{margin-bottom:13px}
+.form-row label{display:block;font-size:12px;color:#6b7686;margin-bottom:5px;font-weight:600}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1px solid #dde3ea;border-radius:9px;font-size:14px;outline:none;font-family:inherit}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(243,156,18,.12)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.hidden{display:none!important}
+#toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#2c3e50;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:200;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+#toast.show{opacity:1}
+.empty{text-align:center;color:#b0b8c4;padding:32px 0;font-size:13px}
+.pomo-wrap{display:flex;flex-direction:column;align-items:center;padding:26px 0 10px}
+.pomo-ring{position:relative;width:210px;height:210px}
+.pomo-ring svg{transform:rotate(-90deg)}
+.pomo-ring .time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pomo-ring .time b{font-size:46px;color:#2c3e50;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.pomo-ring .time span{font-size:13px;color:#9aa5b1;margin-top:4px}
+.pomo-actions{display:flex;gap:10px;margin-top:18px}
+.pomo-actions button{min-width:96px}
+.pomo-stats{display:flex;gap:26px;margin-top:14px;color:#7f8c9b;font-size:12.5px}
+.pomo-stats b{color:#2c3e50;font-size:15px}
+.sched-day{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.sched-day .dlabel{width:76px;flex-shrink:0;text-align:center;background:#f8fafc;border-radius:10px;padding:8px 4px}
+.sched-day .dlabel .dw{font-size:12px;color:#9aa5b1}
+.sched-day .dlabel .dd{font-size:18px;font-weight:700;color:#2c3e50}
+.sched-day .dlabel.today{background:var(--accent)}
+.sched-day .dlabel.today .dw,.sched-day .dlabel.today .dd{color:#fff}
+.sched-items{flex:1}
+.sched-item{display:flex;align-items:center;gap:10px;background:#fff;border-radius:10px;padding:9px 12px;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.sched-item .st{font-size:12.5px;color:#5d6d7e;min-width:44px;font-variant-numeric:tabular-nums}
+.sched-item .sn{flex:1;font-size:13.5px;color:#34495e}
+.sched-item .sc{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* ---------- 优化：深色模式 / 打印 / 返回按钮 ---------- */
+header .backBtn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:8px;text-decoration:none;font-size:13px;transition:.2s}
+header .backBtn:hover{background:rgba(255,255,255,.3)}
+body.dark{background:#12181f;color:#d5dce5}
+body.dark header{box-shadow:0 2px 8px rgba(0,0,0,.4)}
+body.dark .tabs{background:#161d26;border-bottom-color:#1f2a36}
+body.dark .tabs button{color:#8b98a9}
+body.dark .card,body.dark .panel{background:#1a222c;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+body.dark .card .value,body.dark .modal h3{color:#e6ecf3}
+body.dark .card .label,body.dark .panel h3{color:#9aa7b8}
+body.dark th{background:#1e2833;color:#9aa7b8;border-bottom-color:#273242}
+body.dark td{border-bottom-color:#202b37}
+body.dark tr:hover td{background:#1d2732}
+body.dark .btn.ghost{background:#27333f;color:#d5dce5}
+body.dark .form-row input,body.dark .form-row select,body.dark .form-row textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .modal{background:#1a222c}
+body.dark .modal-overlay{background:rgba(8,12,18,.6)}
+body.dark .filters select,body.dark .filters input,body.dark .filters input::placeholder{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .empty{color:#5c6a7a}
+body.dark .progress{background:#27333f}
+@media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⏰ 时间管理系统</div>
+  <div class="actions">
+    <a href="index.html" class="backBtn">🏠 总览</a>
+    <button onclick="toggleTheme()" class="themeBtn">🌙</button>
+    <button onclick="loadExample()">✨ 示例</button>
+    <button onclick="exportData()">📤 导出</button>
+    <button onclick="document.getElementById('file').click()">📥 导入</button>
+    <input type="file" id="file" accept=".json" class="hidden" onchange="importData(this)">
+  </div>
+</header>
+<nav class="tabs">
+  <button class="active" data-tab="dash" onclick="switchTab('dash')">仪表盘</button>
+  <button data-tab="pomo" onclick="switchTab('pomo')">番茄钟</button>
+  <button data-tab="sched" onclick="switchTab('sched')">日程安排</button>
+  <button data-tab="stats" onclick="switchTab('stats')">时间统计</button>
+</nav>
+<main>
+  <section id="tab-dash" class="tabpane active">
+    <div class="cards" id="dashCards"></div>
+    <div class="grid2">
+      <div class="panel"><h3>今日时间分配</h3><div id="todayCats"></div></div>
+      <div class="panel"><h3>近 7 日专注时长</h3><canvas id="chartWeek"></canvas></div>
+    </div>
+    <div class="panel"><h3>今日日程</h3><div id="todaySched"></div></div>
+  </section>
+  <section id="tab-pomo" class="tabpane">
+    <div class="panel">
+      <div class="pomo-wrap">
+        <div class="pomo-ring">
+          <svg width="210" height="210" viewBox="0 0 210 210">
+            <circle cx="105" cy="105" r="92" fill="none" stroke="#eef1f5" stroke-width="12"/>
+            <circle id="pomoArc" cx="105" cy="105" r="92" fill="none" stroke="#f39c12" stroke-width="12" stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="0"/>
+          </svg>
+          <div class="time"><b id="pomoTime">25:00</b><span id="pomoState">准备开始</span></div>
+        </div>
+        <div class="pomo-actions">
+          <button class="btn" id="pomoBtn" onclick="pomoToggle()">▶ 开始</button>
+          <button class="btn ghost" onclick="pomoReset()">↺ 重置</button>
+        </div>
+        <div class="pomo-stats">
+          <span>今日 🍅 <b id="pomoToday">0</b></span>
+          <span>本周 🍅 <b id="pomoWeek">0</b></span>
+          <span>累计 🍅 <b id="pomoTotal">0</b></span>
+        </div>
+      </div>
+    </div>
+    <div class="panel"><h3>专注记录</h3><table id="pomoTable"></table></div>
+  </section>
+  <section id="tab-sched" class="tabpane">
+    <div class="panel">
+      <h3>一周日程<button class="btn sm" onclick="openSched()">＋ 添加安排</button></h3>
+      <div id="schedList"></div>
+    </div>
+  </section>
+  <section id="tab-stats" class="tabpane">
+    <div class="cards" id="statCards"></div>
+    <div class="grid2">
+      <div class="panel"><h3>近 30 天专注时长</h3><canvas id="chart30"></canvas></div>
+      <div class="panel"><h3>分类时间占比（本月）</h3><canvas id="chartCat"></canvas></div>
+    </div>
+  </section>
+</main>
+<button class="fab" onclick="openSched()">＋</button>
+
+<div id="modalSched" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="schedTitle">添加安排</h3>
+    <div class="form-row"><label>日期</label><input type="date" id="sDate"></div>
+    <div class="form-row"><label>开始时间</label><input type="time" id="sStart" value="09:00"></div>
+    <div class="form-row"><label>结束时间</label><input type="time" id="sEnd" value="10:00"></div>
+    <div class="form-row"><label>事项</label><input type="text" id="sName" placeholder="如：晨会"></div>
+    <div class="form-row"><label>分类</label><select id="sCat"><option value="工作">工作</option><option value="学习">学习</option><option value="生活">生活</option><option value="运动">运动</option><option value="休息">休息</option></select></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modalSched')">取消</button>
+      <button class="btn" onclick="saveSched()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+const KEY='time_sys_v1';
+let db=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{pomos:[],scheds:[]}}catch(e){return{pomos:[],scheds:[]}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=t==='dark'?'☀️':'🌙')}
+function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
+applyTheme(localStorage.getItem('theme')||'light');
+function loadExample(){
+  if(!confirm('将用示例数据覆盖当前数据，确定？'))return;
+  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0');
+  const day=n=>y+'-'+m+'-'+String(n).padStart(2,'0');
+  db.pomos=[
+    {id:uid(),date:day(1),task:'学习 React',minutes:25},
+    {id:uid(),date:day(2),task:'写周报',minutes:25},
+    {id:uid(),date:day(2),task:'学习 React',minutes:25},
+    {id:uid(),date:day(3),task:'健身',minutes:25},
+    {id:uid(),date:day(4),task:'阅读',minutes:25},
+    {id:uid(),date:day(5),task:'学习 React',minutes:25},
+    {id:uid(),date:day(5),task:'阅读',minutes:25},
+    {id:uid(),date:day(6),task:'写代码',minutes:25}
+  ];
+  db.scheds=[
+    {id:uid(),date:day(7),start:'09:00',end:'10:30',name:'团队晨会',cat:'工作'},
+    {id:uid(),date:day(7),start:'11:00',end:'12:00',name:'学习 React',cat:'学习'},
+    {id:uid(),date:day(7),start:'19:00',end:'20:00',name:'夜跑',cat:'运动'},
+    {id:uid(),date:day(8),start:'14:00',end:'16:00',name:'读书',cat:'学习'}
+  ];
+  save();renderDash();pomoUpdate();toast('已载入示例数据 ✨');
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+function hm(t){if(!t)return'—';const[d,ti]=t.split('T');return ti||t.slice(5,16)}
+const catColors={工作:'#2980b9',学习:'#8e44ad',生活:'#27ae60',运动:'#e74c3c',休息:'#7f8c8d',其他:'#95a5a6'};
+
+function switchTab(name){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
+  if(name==='dash')renderDash();
+  if(name==='pomo')renderPomo();
+  if(name==='sched')renderSched();
+  if(name==='stats')renderStats();
+}
+function closeModal(id){document.getElementById(id).classList.add('hidden')}
+
+/* ===== 番茄钟 ===== */
+let pomoTimer=null,pomoRemaining=25*60,pomoRunning=false,pomoTask='';
+function pomoUpdate(){
+  const m=String(Math.floor(pomoRemaining/60)).padStart(2,'0'),s=String(pomoRemaining%60).padStart(2,'0');
+  document.getElementById('pomoTime').textContent=m+':'+s;
+  const total=25*60;
+  const arc=document.getElementById('pomoArc');
+  arc.style.strokeDashoffset=578*(1-pomoRemaining/total);
+  arc.style.stroke=pomoRemaining<=total*0.2?'#e74c3c':'#f39c12';
+}
+function pomoToggle(){
+  if(pomoRunning){
+    clearInterval(pomoTimer);pomoRunning=false;
+    document.getElementById('pomoBtn').textContent='▶ 继续';
+    document.getElementById('pomoState').textContent='已暂停';
+  }else{
+    if(pomoRemaining<=0)pomoRemaining=25*60;
+    pomoRunning=true;
+    document.getElementById('pomoBtn').textContent='⏸ 暂停';
+    document.getElementById('pomoState').textContent='专注中，保持专注…';
+    pomoTimer=setInterval(()=>{
+      pomoRemaining--;
+      if(pomoRemaining<=0){
+        clearInterval(pomoTimer);pomoRunning=false;
+        pomoComplete();
+        return;
+      }
+      pomoUpdate();
+    },1000);
+  }
+  pomoUpdate();
+}
+function pomoReset(){
+  clearInterval(pomoTimer);pomoRunning=false;
+  pomoRemaining=25*60;
+  document.getElementById('pomoBtn').textContent='▶ 开始';
+  document.getElementById('pomoState').textContent='准备开始';
+  pomoUpdate();
+}
+function pomoComplete(){
+  const task=prompt('🍅 完成一个番茄钟！记录一下做了什么：','')||'专注任务';
+  db.pomos.push({id:uid(),date:today(),task,minutes:25});
+  save();
+  document.getElementById('pomoBtn').textContent='▶ 开始';
+  document.getElementById('pomoState').textContent='干得漂亮！休息 5 分钟 ☕';
+  pomoRemaining=25*60;
+  pomoUpdate();
+  renderPomo();renderDash();renderStats();
+  toast('番茄钟完成 🍅');
+}
+function delPomo(id){db.pomos=db.pomos.filter(p=>p.id!==id);save();renderPomo();renderDash();renderStats()}
+function renderPomo(){
+  const t=today();
+  const weekStart=new Date();weekStart.setDate(weekStart.getDate()-weekStart.getDay()+1);
+  document.getElementById('pomoToday').textContent=db.pomos.filter(p=>p.date===t).length;
+  document.getElementById('pomoWeek').textContent=db.pomos.filter(p=>{const d=new Date(p.date+'T00:00:00');return d>=weekStart}).length;
+  document.getElementById('pomoTotal').textContent=db.pomos.length;
+  const tb=document.getElementById('pomoTable');
+  const list=[...db.pomos].sort((a,b)=>a.date<b.date?1:-1).slice(0,30);
+  if(!list.length){tb.innerHTML='<tr><td class="empty" colspan="3">还没有专注记录，去番茄钟完成一个吧！</td></tr>';return}
+  tb.innerHTML='<tr><th>日期</th><th>事项</th><th>时长</th><th></th></tr>'+list.map(p=>`<tr><td>${p.date}</td><td>${esc(p.task)}</td><td>🍅 25 分钟</td><td><button class="btn sm danger" onclick="delPomo('${p.id}')">删除</button></td></tr>`).join('');
+}
+
+/* ===== 日程 ===== */
+function openSched(id){
+  const s=id?db.scheds.find(x=>x.id===id):null;
+  document.getElementById('schedTitle').textContent=s?'编辑安排':'添加安排';
+  document.getElementById('sDate').value=s?s.date:today();
+  document.getElementById('sStart').value=s?s.start:'09:00';
+  document.getElementById('sEnd').value=s?s.end:'10:00';
+  document.getElementById('sName').value=s?s.name:'';
+  document.getElementById('sCat').value=s?s.cat:'工作';
+  document.getElementById('sName').dataset.editId=id||'';
+  document.getElementById('modalSched').classList.remove('hidden');
+}
+function saveSched(){
+  const name=document.getElementById('sName').value.trim();
+  if(!name){toast('请输入事项');return}
+  const editId=document.getElementById('sName').dataset.editId;
+  const data={date:document.getElementById('sDate').value||today(),start:document.getElementById('sStart').value,end:document.getElementById('sEnd').value,name,cat:document.getElementById('sCat').value};
+  if(editId)Object.assign(db.scheds.find(x=>x.id===editId),data);
+  else db.scheds.push({id:uid(),...data});
+  save();closeModal('modalSched');renderSched();renderDash();toast('已保存日程');
+}
+function delSched(id){db.scheds=db.scheds.filter(s=>s.id!==id);save();renderSched();renderDash()}
+function schedDuration(s){
+  const [h1,m1]=s.start.split(':').map(Number),[h2,m2]=s.end.split(':').map(Number);
+  let mins=h2*60+m2-h1*60-m1;
+  if(mins<0)mins+=24*60;
+  return mins;
+}
+function renderSched(){
+  const el=document.getElementById('schedList');
+  const days=[];
+  const now=new Date();
+  for(let i=0;i<7;i++){const d=new Date(now);d.setDate(d.getDate()-now.getDay()+i);days.push(d)}
+  const weekStr=['周日','周一','周二','周三','周四','周五','周六'];
+  el.innerHTML=days.map(d=>{
+    const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const items=db.scheds.filter(s=>s.date===ds).sort((a,b)=>a.start<b.start?-1:1);
+    const isToday=ds===today();
+    return `<div class="sched-day">
+      <div class="dlabel ${isToday?'today':''}"><div class="dw">${weekStr[d.getDay()]}</div><div class="dd">${d.getDate()}</div>${isToday?'<div style="font-size:10px;color:rgba(255,255,255,.8)">今天</div>':''}</div>
+      <div class="sched-items">${items.length?items.map(s=>`<div class="sched-item"><span class="sc" style="background:${catColors[s.cat]}"></span><span class="st">${s.start}–${s.end}</span><span class="sn">${esc(s.name)}</span><span class="tag" style="background:${catColors[s.cat]}22;color:${catColors[s.cat]}">${s.cat}</span><button class="btn sm ghost" onclick="openSched('${s.id}')">✎</button><button class="btn sm danger" onclick="delSched('${s.id}')">×</button></div>`).join(''):'<div style="color:#b0b8c4;font-size:12.5px;padding:8px 4px">空闲</div>'}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== 统计 ===== */
+function renderStats(){
+  const ym=today().slice(0,7);
+  const monthPomos=db.pomos.filter(p=>p.date.startsWith(ym));
+  const monthMin=monthPomos.length*25;
+  const weekMin=db.pomos.filter(p=>{const d=new Date(p.date+'T00:00:00');const ws=new Date();ws.setDate(ws.getDate()-ws.getDay()+1);return d>=ws}).length*25;
+  const todayMin=db.pomos.filter(p=>p.date===today()).length*25;
+  const catMap={};
+  monthPomos.forEach(p=>{
+    const s=db.scheds.find(x=>x.name===p.task);
+    const c=s?s.cat:'其他';
+    catMap[c]=(catMap[c]||0)+25;
+  });
+  document.getElementById('statCards').innerHTML=`
+    <div class="card"><div class="label">今日专注</div><div class="value">${todayMin} 分钟</div><div class="sub">${todayMin/25} 个番茄</div></div>
+    <div class="card"><div class="label">本周专注</div><div class="value">${weekMin} 分钟</div><div class="sub">${weekMin/25} 个番茄</div></div>
+    <div class="card"><div class="label">本月专注</div><div class="value">${monthMin} 分钟</div><div class="sub">${ym}</div></div>
+    <div class="card"><div class="label">累计专注</div><div class="value">${(db.pomos.length*25/60).toFixed(1)} 小时</div><div class="sub">共 ${db.pomos.length} 个番茄</div></div>`;
+  const days=[];const now=new Date();
+  for(let i=29;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);days.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'))}
+  const map={};db.pomos.forEach(p=>map[p.date]=(map[p.date]||0)+1);
+  drawBar('chart30',days.map(d=>d.slice(5)),days.map(d=>map[d]||0),'#f39c12');
+  drawDonut('chartCat',catMap);
+}
+
+/* ===== 仪表盘 ===== */
+function renderDash(){
+  const t=today();
+  const pomosToday=db.pomos.filter(p=>p.date===t);
+  const schedsToday=db.scheds.filter(s=>s.date===t).sort((a,b)=>a.start<b.start?-1:1);
+  const catMin={};
+  schedsToday.forEach(s=>catMin[s.cat]=(catMin[s.cat]||0)+schedDuration(s));
+  document.getElementById('dashCards').innerHTML=`
+    <div class="card"><div class="label">今日番茄</div><div class="value">${pomosToday.length} 个</div><div class="sub">${pomosToday.length*25} 分钟专注</div></div>
+    <div class="card"><div class="label">今日安排</div><div class="value">${schedsToday.length} 项</div><div class="sub">共 ${schedsToday.reduce((s,x)=>s+schedDuration(x),0)} 分钟</div></div>
+    <div class="card"><div class="label">本周番茄</div><div class="value">${db.pomos.filter(p=>{const d=new Date(p.date+'T00:00:00');const ws=new Date();ws.setDate(ws.getDate()-ws.getDay()+1);return d>=ws}).length} 个</div><div class="sub">保持节奏 ⏱</div></div>
+    <div class="card"><div class="label">累计专注</div><div class="value">${(db.pomos.length*25/60).toFixed(1)} 小时</div><div class="sub">共 ${db.pomos.length} 个番茄</div></div>`;
+  const tc=document.getElementById('todayCats');
+  if(!Object.keys(catMin).length){tc.innerHTML='<div class="empty">今天还没有日程安排</div>'}
+  else{
+    tc.innerHTML=Object.entries(catMin).map(([c,m])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span class="sc" style="width:10px;height:10px;border-radius:50%;background:${catColors[c]}"></span><span style="flex:1;font-size:13px;color:#34495e">${c}</span><span style="font-size:12px;color:#9aa5b1">${m} 分钟</span><div class="progress" style="flex:1.4;height:6px"><div style="width:${Math.min(100,m/Math.max(1,Math.max(...Object.values(catMin)))*100)}%;background:${catColors[c]}"></div></div></div>`).join('');
+  }
+  const days=[];const now=new Date();
+  for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);days.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'))}
+  const map={};db.pomos.forEach(p=>map[p.date]=(map[p.date]||0)+1);
+  drawBar('chartWeek',days.map(d=>['日','一','二','三','四','五','六'][new Date(d+'T00:00:00').getDay()]),days.map(d=>map[d]||0),'#f39c12');
+  const ts=document.getElementById('todaySched');
+  ts.innerHTML=schedsToday.length?schedsToday.map(s=>`<div class="sched-item"><span class="sc" style="background:${catColors[s.cat]}"></span><span class="st">${s.start}–${s.end}</span><span class="sn">${esc(s.name)}</span><span class="tag" style="background:${catColors[s.cat]}22;color:${catColors[s.cat]}">${s.cat}</span></div>`).join(''):'<div class="empty">今天暂无安排，点击 ＋ 添加</div>';
+}
+
+/* ===== 图表 ===== */
+function prepCanvas(id){const cv=document.getElementById(id);const dpr=window.devicePixelRatio||1;const r=cv.getBoundingClientRect();cv.width=r.width*dpr;cv.height=r.height*dpr;const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,r.width,r.height);return{ctx,w:r.width,h:r.height}}
+function drawBar(id,labels,values,color){
+  const {ctx,w,h}=prepCanvas(id);
+  if(!values.some(v=>v>0)){ctx.fillStyle='#b0b8c4';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('暂无数据',w/2,h/2);return}
+  const pad={l:40,r:10,t:14,b:26};
+  const mx=Math.max(...values,1);
+  const step=(w-pad.l-pad.r)/values.length,bw=Math.min(30,step*0.6);
+  ctx.strokeStyle='#eef1f5';ctx.lineWidth=1;ctx.font='10px sans-serif';ctx.fillStyle='#9aa5b1';
+  for(let i=0;i<=3;i++){const y=pad.t+i*(h-pad.t-pad.b)/3;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(Math.round(mx*(1-i/3)),pad.l-6,y+3)}
+  values.forEach((v,i)=>{
+    if(!v)return;
+    const x=pad.l+step*i+(step-bw)/2,bh=(v/mx)*(h-pad.t-pad.b);
+    ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,h-pad.b-bh,bw,bh,4);ctx.fill();
+  });
+  ctx.fillStyle='#6b7686';ctx.font='10px sans-serif';ctx.textAlign='center';
+  const showEvery=Math.ceil(labels.length/12);
+  labels.forEach((l,i)=>{if(i%showEvery===0||i===labels.length-1)ctx.fillText(l,pad.l+step*i+step/2,h-8)});
+}
+function drawDonut(id,mapObj){
+  const {ctx,w,h}=prepCanvas(id);
+  const entries=Object.entries(mapObj);
+  if(!entries.length){ctx.fillStyle='#b0b8c4';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('暂无数据',w/2,h/2);return}
+  const total=entries.reduce((s,e)=>s+e[1],0);
+  const cx=w/2-50,cy=h/2,r=Math.min(w,h)/2-16;
+  let start=-Math.PI/2;
+  entries.forEach((e,i)=>{
+    const ang=e[1]/total*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,start+ang);ctx.closePath();
+    ctx.fillStyle=catColors[e[0]]||'#95a5a6';ctx.fill();
+    start+=ang;
+  });
+  ctx.beginPath();ctx.arc(cx,cy,r*0.55,0,7);ctx.fillStyle='#fff';ctx.fill();
+  ctx.fillStyle='#34495e';ctx.font='bold 15px sans-serif';ctx.textAlign='center';
+  ctx.fillText(Math.round(total/25)+' 🍅',cx,cy+5);
+  let ly=14;
+  ctx.font='12px sans-serif';ctx.textAlign='left';
+  entries.forEach((e,i)=>{
+    ctx.fillStyle=catColors[e[0]]||'#95a5a6';ctx.fillRect(w-150,ly-9,10,10);
+    ctx.fillStyle='#5d6d7e';ctx.fillText(e[0]+' '+e[1]+'min',w-134,ly);
+    ly+=20;
+  });
+}
+
+/* ===== 导出导入 ===== */
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='时间数据备份-'+today()+'.json';a.click();toast('已导出');
+}
+function importData(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(!d.pomos)throw 0;
+    if(confirm('导入将覆盖当前所有数据，确定继续？')){db=d;save();toast('导入成功');renderDash()}
+  }catch(e){toast('文件格式不正确')}};
+  r.readAsText(f);input.value='';
+}
+
+renderDash();
+pomoUpdate();
+</script>
+</body>
+</html>
