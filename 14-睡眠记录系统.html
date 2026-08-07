@@ -60,6 +60,8 @@ body.dark .modal{background:#1a222c}
 body.dark .form-row input,body.dark .form-row select,body.dark .form-row textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
 body.dark .modal-actions .no{background:#27333f;color:#9aa7b8}
 body.dark .item .bar{background:#27333f}
+body.dark .empty{color:#5c6a7a}
+body.dark .foot{color:#5c6a7a}
 .foot{text-align:center;color:#b0b8c4;font-size:11.5px;padding:0 0 24px}
 </style>
 </head>
@@ -102,11 +104,11 @@ const EXAMPLE=[{"id": "e1", "date": "2026-08-05", "bed": "23:30", "wake": "07:00
 const SEARCH_FIELDS=["note"];
 let state=load();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.items)return s}catch(e){}return {items:[]}}
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('保存失败：存储空间不足')}}
 function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙'}
 function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
 applyTheme(localStorage.getItem('theme')||'light');
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1800)}
 function uid(){return 'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function today(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
@@ -159,14 +161,14 @@ function exportData(){
 function importData(){
   const f=document.getElementById('importFile');f.value='';
   f.onchange=()=>{const r=new FileReader();r.onload=e=>{
-    try{const d=JSON.parse(e.target.result.replace(/^\ufeff/,''));if(!d.items||!Array.isArray(d.items))throw 0;
+    try{const d=JSON.parse(e.target.result.replace(/^\ufeff/,''));if(!d.items||!Array.isArray(d.items))throw 0;d.items=d.items.filter(x=>x&&typeof x==='object');d.items.forEach(x=>{if(typeof x.id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(x.id))x.id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)});
       state=d;save();renderList();renderStats();toast('导入成功 ✓');
     }catch(err){toast('文件格式不正确')}
   };r.readAsText(f.files[0])};
   f.click();
 }
 function loadExample(){state={items:JSON.parse(JSON.stringify(EXAMPLE))};save();renderList();renderStats();toast('已载入示例数据 ✨')}
-const ITEM_HTML=it=>{const d=(()=>{if(!it.bed||!it.wake)return null;const b=it.bed.split(':').map(Number),w=it.wake.split(':').map(Number);let m=w[0]*60+w[1]-b[0]*60-b[1];if(m<0)m+=1440;return Math.floor(m/60)+'h'+(m%60?m%60+'m':'')})();const qm={'优':'🟢','良':'🟡','一般':'🟠','差':'🔴'};return '<div class="item"><button class="del" onclick="delItem(\''+it.id+'\')">✕</button><h4>'+esc(it.date)+'　'+(qm[it.quality]||'')+' '+esc(it.quality||'—')+'</h4><div class="meta"><b>睡眠</b> '+(it.bed||'—')+' → '+(it.wake||'—')+(d?'　<b>时长</b> '+d:'')+'</div><div class="meta">'+esc(it.note||'')+'</div></div>'};
+const ITEM_HTML=it=>{const d=(()=>{if(!it.bed||!it.wake)return null;const b=it.bed.split(':').map(Number),w=it.wake.split(':').map(Number);let m=w[0]*60+w[1]-b[0]*60-b[1];if(m<0)m+=1440;return Math.floor(m/60)+'h'+(m%60?m%60+'m':'')})();const qm={'优':'🟢','良':'🟡','一般':'🟠','差':'🔴'};return '<div class="item"><button class="del" onclick="delItem(\''+String(it.id||'').replace(/[^a-zA-Z0-9_-]/g,'')+'\')">✕</button><h4>'+esc(it.date)+'　'+(qm[it.quality]||'')+' '+esc(it.quality||'—')+'</h4><div class="meta"><b>睡眠</b> '+(it.bed||'—')+' → '+(it.wake||'—')+(d?'　<b>时长</b> '+d:'')+'</div><div class="meta">'+esc(it.note||'')+'</div></div>'};
 const STATS_FN=items=>{const dur=it=>{if(!it.bed||!it.wake)return null;const b=it.bed.split(':').map(Number),w=it.wake.split(':').map(Number);let m=w[0]*60+w[1]-b[0]*60-b[1];if(m<0)m+=1440;return m};const ds=items.map(dur).filter(x=>x!=null);const avg=ds.length?ds.reduce((a,b)=>a+b,0)/ds.length/60:0;const now=new Date();const wk=items.filter(it=>{const d=new Date(it.date);return now-d<7*864e5});const wds=wk.map(dur).filter(x=>x!=null);const wa=wds.length?wds.reduce((a,b)=>a+b,0)/wds.length/60:0;const good=items.filter(x=>x.quality==='优'||x.quality==='良').length;return[{k:'记录天数',v:items.length},{k:'平均时长',v:avg?avg.toFixed(1)+'h':'—'},{k:'近7天平均',v:wa?wa.toFixed(1)+'h':'—'},{k:'优质率',v:items.length?Math.round(good/items.length*100)+'%':'—'}]};
 
 renderList();renderStats();

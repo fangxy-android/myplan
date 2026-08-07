@@ -167,6 +167,8 @@ body.dark .pos-summary .ps-v{color:#e6ecf3}
 body.dark .pos-card{background:#1e2833;border-color:#2a3644}
 body.dark .pos-card .pc-val{color:#e6ecf3}
 body.dark .sc-pos{border-color:#2a3644}
+body.dark input,body.dark select,body.dark textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .empty{color:#5c6a7a}
 </style>
 </head>
 <body>
@@ -329,15 +331,16 @@ const DEF_CATS=[
  {id:'i1',name:'工资',type:'income',icon:'💼'},{id:'i2',name:'奖金',type:'income',icon:'🎉'},
  {id:'i3',name:'理财',type:'income',icon:'📈'},{id:'i4',name:'其他',type:'income',icon:'💰'}
 ];
+const DEF_STOCKS=[{id:'s1',code:'600519',name:'贵州茅台',group:'all',alert:null},{id:'s2',code:'300750',name:'宁德时代',group:'all',alert:null},{id:'s3',code:'601318',name:'中国平安',group:'all',alert:null},{id:'s4',code:'000858',name:'五粮液',group:'all',alert:null},{id:'s5',code:'000001',name:'平安银行',group:'all',alert:null},{id:'s6',code:'600036',name:'招商银行',group:'all',alert:null},{id:'s7',code:'000333',name:'美的集团',group:'all',alert:null},{id:'s8',code:'601899',name:'紫金矿业',group:'all',alert:null}];
 let state=load();
 function defaults(){return{records:[],cats:JSON.parse(JSON.stringify(DEF_CATS)),budgets:{},totalBudget:0,stocks:JSON.parse(JSON.stringify(DEF_STOCKS)),positions:[],alerts:{}}}
-const DEF_STOCKS=[{id:'s1',code:'600519',name:'贵州茅台',group:'all',alert:null},{id:'s2',code:'300750',name:'宁德时代',group:'all',alert:null},{id:'s3',code:'601318',name:'中国平安',group:'all',alert:null},{id:'s4',code:'000858',name:'五粮液',group:'all',alert:null},{id:'s5',code:'000001',name:'平安银行',group:'all',alert:null},{id:'s6',code:'600036',name:'招商银行',group:'all',alert:null},{id:'s7',code:'000333',name:'美的集团',group:'all',alert:null},{id:'s8',code:'601899',name:'紫金矿业',group:'all',alert:null}];
 function load(){try{const s=JSON.parse(localStorage.getItem(LS_KEY));if(s&&s.cats){if(!s.stocks)s.stocks=JSON.parse(JSON.stringify(DEF_STOCKS));if(!s.positions)s.positions=[];if(!s.alerts)s.alerts={};s.stocks.forEach(x=>{if(!x.group)x.group='all';if(x.alert==null)x.alert=null});return s}}catch(e){}return defaults()}
-function save(){localStorage.setItem(LS_KEY,JSON.stringify(state))}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state))}catch(e){toast('保存失败：存储空间不足')}}
 function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=t==='dark'?'☀️':'🌙')}
 function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
 applyTheme(localStorage.getItem('theme')||'light');
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function curMonth(){return todayStr().slice(0,7)}
 function money(n){return '¥'+Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -403,7 +406,7 @@ function renderDash(){
   const expByCat={};expenseRecs(recs).forEach(r=>{const k=r.category;expByCat[k]=(expByCat[k]||0)+r.amount});
   drawDonut(document.getElementById('chartDonut'),Object.entries(expByCat).map(([k,v])=>({name:catById(k)?catById(k).icon+' '+catById(k).name:k,value:v})));
   const recent=[...state.records].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,10);
-  document.getElementById('recentList').innerHTML=recent.length?`<table><tr><th>日期</th><th>类型</th><th>分类</th><th>备注</th><th style="text-align:right">金额</th></tr>${recent.map(r=>{const c=catById(r.category);return `<tr><td>${r.date}</td><td><span class="tag ${r.type}">${r.type==='income'?'收入':'支出'}</span></td><td>${c?c.icon+' '+c.name:r.category}</td><td>${r.note||'—'}</td><td style="text-align:right" class="${r.type==='income'?'pos':'neg'}">${r.type==='income'?'+':'−'}${money(r.amount)}</td></tr>`}).join('')}</table>`:'<div class="empty">暂无记录，点击右下角 ＋ 添加第一笔</div>';
+  document.getElementById('recentList').innerHTML=recent.length?`<table><tr><th>日期</th><th>类型</th><th>分类</th><th>备注</th><th style="text-align:right">金额</th></tr>${recent.map(r=>{const c=catById(r.category);return `<tr><td>${r.date}</td><td><span class="tag ${r.type}">${r.type==='income'?'收入':'支出'}</span></td><td>${c?esc(c.icon)+' '+esc(c.name):esc(r.category)}</td><td>${esc(r.note)||'—'}</td><td style="text-align:right" class="${r.type==='income'?'pos':'neg'}">${r.type==='income'?'+':'−'}${money(r.amount)}</td></tr>`}).join('')}</table>`:'<div class="empty">暂无记录，点击右下角 ＋ 添加第一笔</div>';
 }
 function expenseRecs(recs){return recs.filter(r=>r.type==='expense')}
 
@@ -411,11 +414,11 @@ function expenseRecs(recs){return recs.filter(r=>r.type==='expense')}
 function renderRecords(){
   const fType=document.getElementById('fType').value,fMonth=document.getElementById('fMonth').value,fCat=document.getElementById('fCat').value,fSearch=document.getElementById('fSearch').value.trim();
   const catsel=document.getElementById('fCat');
-  if(!catsel._init){catsel.innerHTML='<option value="">全部分类</option>'+state.cats.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');catsel._init=true}
+  if(!catsel._init){catsel.innerHTML='<option value="">全部分类</option>'+state.cats.map(c=>`<option value="${esc(c.id)}">${esc(c.icon)} ${esc(c.name)}</option>`).join('');catsel._init=true}
   let recs=state.records.filter(r=>(!fType||r.type===fType)&&(!fMonth||r.date.startsWith(fMonth))&&(!fCat||r.category===fCat)&&(!fSearch||(r.note||'').includes(fSearch)));
   recs=[...recs].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
   let sum=recs.reduce((s,r)=>s+(r.type==='income'?r.amount:-r.amount),0);
-  document.getElementById('recTable').innerHTML=recs.length?`<tr><th>日期</th><th>类型</th><th>分类</th><th>备注</th><th style="text-align:right">金额</th><th style="text-align:right">操作</th></tr>${recs.map(r=>{const c=catById(r.category);return `<tr><td>${r.date}</td><td><span class="tag ${r.type}">${r.type==='income'?'收入':'支出'}</span></td><td>${c?c.icon+' '+c.name:r.category}</td><td>${r.note||'—'}</td><td style="text-align:right" class="${r.type==='income'?'pos':'neg'}">${r.type==='income'?'+':'−'}${money(r.amount)}</td><td style="text-align:right"><button class="btn ghost sm" onclick="editRecord('${r.id}')">编辑</button> <button class="btn danger sm" onclick="delRecord('${r.id}')">删除</button></td></tr>`}).join('')}<tr><td colspan="4" style="text-align:right"><b>合计</b></td><td style="text-align:right" class="${sum>=0?'pos':'neg'}"><b>${money(sum)}</b></td><td></td></tr>`:'<tr><td colspan="6"><div class="empty">没有符合条件的记录</div></td></tr>';
+  document.getElementById('recTable').innerHTML=recs.length?`<tr><th>日期</th><th>类型</th><th>分类</th><th>备注</th><th style="text-align:right">金额</th><th style="text-align:right">操作</th></tr>${recs.map(r=>{const c=catById(r.category);return `<tr><td>${r.date}</td><td><span class="tag ${r.type}">${r.type==='income'?'收入':'支出'}</span></td><td>${c?esc(c.icon)+' '+esc(c.name):esc(r.category)}</td><td>${esc(r.note)||'—'}</td><td style="text-align:right" class="${r.type==='income'?'pos':'neg'}">${r.type==='income'?'+':'−'}${money(r.amount)}</td><td style="text-align:right"><button class="btn ghost sm" onclick="editRecord('${r.id}')">编辑</button> <button class="btn danger sm" onclick="delRecord('${r.id}')">删除</button></td></tr>`}).join('')}<tr><td colspan="4" style="text-align:right"><b>合计</b></td><td style="text-align:right" class="${sum>=0?'pos':'neg'}"><b>${money(sum)}</b></td><td></td></tr>`:'<tr><td colspan="6"><div class="empty">没有符合条件的记录</div></td></tr>';
 }
 let editId=null;
 function openRecord(id){
@@ -430,8 +433,8 @@ function openRecord(id){
 }
 function fillCatSelect(sel){
   const t=document.getElementById('mType').value;const selEl=document.getElementById('mCat');
-  selEl.innerHTML=catsByType(t).map(c=>`<option value="${c.id}" ${c.id===sel?'selected':''}>${c.icon} ${c.name}</option>`).join('');
-  if(sel&&!catsByType(t).some(c=>c.id===sel)){selEl.innerHTML+='<option value="'+sel+'" selected>未知分类</option>'}
+  selEl.innerHTML=catsByType(t).map(c=>`<option value="${esc(c.id)}" ${c.id===sel?'selected':''}>${esc(c.icon)} ${esc(c.name)}</option>`).join('');
+  if(sel&&!catsByType(t).some(c=>c.id===sel)){selEl.innerHTML+='<option value="'+esc(sel)+'" selected>未知分类</option>'}
 }
 function saveRecord(){
   const amount=parseFloat(document.getElementById('mAmount').value);
@@ -456,7 +459,7 @@ function renderBudget(){
     {label:'预算剩余',value:left===null?'—':money(left),sub:left<0?'⚠️ 已超出预算':'还可自由支配'}
   ].map(c=>`<div class="card"><div class="label">${c.label}</div><div class="value ${(c.sub||'').includes('超出')?'neg':''}">${c.value}</div><div class="sub">${c.sub||''}</div></div>`).join('');
   const expByCat={};expenseRecs(recs).forEach(r=>{expByCat[r.category]=(expByCat[r.category]||0)+r.amount});
-  const rows=Object.entries(expByCat).map(([k,v])=>{const b=state.budgets[k]||0;const c=catById(k);return{name:c?c.icon+' '+c.name:k,spent:v,budget:b,pct:b>0?v/b*100:v>0?100:0}});
+  const rows=Object.entries(expByCat).map(([k,v])=>{const b=state.budgets[k]||0;const c=catById(k);return{name:c?esc(c.icon)+' '+esc(c.name):esc(k),spent:v,budget:b,pct:b>0?v/b*100:v>0?100:0}});
   if(state.totalBudget>0){rows.push({name:'🧾 总计',spent:expense,budget:state.totalBudget,pct:expense/state.totalBudget*100})}
   document.getElementById('budgetList').innerHTML=rows.length?rows.map(r=>`<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>${r.name}</span><span class="mono">${money(r.spent)} / ${r.budget>0?money(r.budget):'未设预算'}</span></div><div class="progress"><div style="width:${Math.min(100,r.pct)}%;background:${r.pct>100?'#e74c3c':r.pct>80?'#f39c12':'var(--accent)'}"></div></div></div>`).join(''):'<div class="empty">本月暂无支出记录</div>';
   const months={};state.records.forEach(r=>{const k=r.date.slice(0,7);months[k]=months[k]||{inc:0,exp:0};if(r.type==='income')months[k].inc+=r.amount;else months[k].exp+=r.amount});
@@ -471,7 +474,7 @@ function renderCats(){
 }
 function catList(type){
   const list=catsByType(type);
-  return `<table><tr><th>图标</th><th>名称</th><th style="text-align:right">操作</th></tr>${list.map(c=>`<tr><td>${c.icon}</td><td>${c.name}</td><td style="text-align:right"><button class="btn danger sm" onclick="delCat('${c.id}')">删除</button></td></tr>`).join('')}</table>
+  return `<table><tr><th>图标</th><th>名称</th><th style="text-align:right">操作</th></tr>${list.map(c=>`<tr><td>${esc(c.icon)}</td><td>${esc(c.name)}</td><td style="text-align:right"><button class="btn danger sm" onclick="delCat('${c.id}')">删除</button></td></tr>`).join('')}</table>
   <div style="display:flex;gap:8px;margin-top:14px"><input id="newCatName_${type}" placeholder="新分类名称" style="flex:1;padding:8px 12px;border:1px solid #dde3ea;border-radius:8px;font-size:13px"><input id="newCatIcon_${type}" placeholder="图标 emoji" maxlength="4" style="width:80px;padding:8px;border:1px solid #dde3ea;border-radius:8px;font-size:13px"><button class="btn" onclick="addCat('${type}')">添加</button></div>`;
 }
 function addCat(type){
@@ -494,7 +497,7 @@ function exportData(){
 function importData(input){
   const f=input.files[0];if(!f)return;
   const reader=new FileReader();
-  reader.onload=e=>{try{const d=JSON.parse(e.target.result);if(!d.records||!d.cats)throw 0;state=d;save();renderAll();toast('导入成功 ✓')}catch(err){toast('文件格式不正确')}};
+  reader.onload=e=>{try{const d=JSON.parse(e.target.result);if(!d.records||!d.cats)throw 0;d.records.forEach(x=>{if(typeof x.id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(x.id))x.id='r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)});d.cats.forEach(x=>{if(typeof x.id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(x.id))x.id='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)});state=d;save();renderAll();toast('导入成功 ✓')}catch(err){toast('文件格式不正确')}};
   reader.readAsText(f);input.value='';
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});

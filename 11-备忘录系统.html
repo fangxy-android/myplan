@@ -60,6 +60,8 @@ body.dark .modal{background:#1a222c}
 body.dark .form-row input,body.dark .form-row select,body.dark .form-row textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
 body.dark .modal-actions .no{background:#27333f;color:#9aa7b8}
 body.dark .item .bar{background:#27333f}
+body.dark .empty{color:#5c6a7a}
+body.dark .foot{color:#5c6a7a}
 .foot{text-align:center;color:#b0b8c4;font-size:11.5px;padding:0 0 24px}
 </style>
 </head>
@@ -102,11 +104,11 @@ const EXAMPLE=[{"id": "e1", "title": "还书给老张", "content": "《置身事
 const SEARCH_FIELDS=["title", "content"];
 let state=load();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.items)return s}catch(e){}return {items:[]}}
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('保存失败：存储空间不足')}}
 function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙'}
 function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
 applyTheme(localStorage.getItem('theme')||'light');
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1800)}
 function uid(){return 'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function today(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
@@ -159,14 +161,14 @@ function exportData(){
 function importData(){
   const f=document.getElementById('importFile');f.value='';
   f.onchange=()=>{const r=new FileReader();r.onload=e=>{
-    try{const d=JSON.parse(e.target.result.replace(/^\ufeff/,''));if(!d.items||!Array.isArray(d.items))throw 0;
+    try{const d=JSON.parse(e.target.result.replace(/^\ufeff/,''));if(!d.items||!Array.isArray(d.items))throw 0;d.items=d.items.filter(x=>x&&typeof x==='object');d.items.forEach(x=>{if(typeof x.id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(x.id))x.id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)});
       state=d;save();renderList();renderStats();toast('导入成功 ✓');
     }catch(err){toast('文件格式不正确')}
   };r.readAsText(f.files[0])};
   f.click();
 }
 function loadExample(){state={items:JSON.parse(JSON.stringify(EXAMPLE))};save();renderList();renderStats();toast('已载入示例数据 ✨')}
-const ITEM_HTML=it=>'<div class="item"'+(it.pin?' style="box-shadow:0 0 0 2px '+COLOR+'44"':'')+'><button class="del" onclick="delItem(\''+it.id+'\')">✕</button><h4>'+(it.pin?'📌 ':'')+esc(it.title)+'</h4><div class="meta">'+esc(it.content||'')+'</div><div class="meta"><span class="tag">'+esc(it.cat||'默认')+'</span></div></div>';
+const ITEM_HTML=it=>'<div class="item"'+(it.pin?' style="box-shadow:0 0 0 2px '+COLOR+'44"':'')+'><button class="del" onclick="delItem(\''+String(it.id||'').replace(/[^a-zA-Z0-9_-]/g,'')+'\')">✕</button><h4>'+(it.pin?'📌 ':'')+esc(it.title)+'</h4><div class="meta">'+esc(it.content||'')+'</div><div class="meta"><span class="tag">'+esc(it.cat||'默认')+'</span></div></div>';
 const STATS_FN=items=>{const c={};items.forEach(x=>c[x.cat||'默认']=(c[x.cat||'默认']||0)+1);const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];return[{k:'便签总数',v:items.length},{k:'置顶',v:items.filter(x=>x.pin).length},{k:'分类数',v:Object.keys(c).length},{k:'最多分类',v:top?top[0]+' '+top[1]+'条':'—'}]};
 
 renderList();renderStats();

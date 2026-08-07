@@ -66,6 +66,8 @@ body.dark .modal{background:#1a222c}
 body.dark .form-row input,body.dark .form-row select,body.dark .form-row textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
 body.dark .modal-actions .no{background:#27333f;color:#9aa7b8}
 body.dark .item .bar{background:#27333f}
+body.dark .empty{color:#5c6a7a}
+body.dark .foot{color:#5c6a7a}
 .foot{text-align:center;color:#b0b8c4;font-size:11.5px;padding:0 0 24px}
 
 </style>
@@ -110,11 +112,11 @@ const SEARCH_FIELDS=["topic", "content", "tag"];
 const OPTS={"rel": "date"};
 let state=load();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.items)return s}catch(e){}return {items:[]}}
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('保存失败：存储空间不足')}}
 function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙'}
 function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
 applyTheme(localStorage.getItem('theme')||'light');
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1800)}
 function uid(){return 'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function today(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
@@ -184,7 +186,7 @@ function exportData(){
 function importData(){
   const f=document.getElementById('importFile');f.value='';
   f.onchange=()=>{const r=new FileReader();r.onload=e=>{
-    try{const d=JSON.parse(e.target.result.replace(/^﻿/,''));if(!d.items||!Array.isArray(d.items))throw 0;
+    try{const d=JSON.parse(e.target.result.replace(/^﻿/,''));if(!d.items||!Array.isArray(d.items))throw 0;d.items=d.items.filter(x=>x&&typeof x==='object');d.items.forEach(x=>{if(typeof x.id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(x.id))x.id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)});
       state=d;save();renderList();renderStats();toast('导入成功 ✓');
     }catch(err){toast('文件格式不正确')}
   };r.readAsText(f.files[0])};
@@ -208,8 +210,8 @@ const ITEM_HTML=it=>{
   const bar=OPTS.progress&&it[OPTS.progress]!=null?'<div class="bar"><div style="width:'+Math.min(100,Math.max(0,Number(it[OPTS.progress])||0))+'%"></div></div>':'';
   const tagHtml=sel&&it[sel.n]?'<div class="meta"><span class="tag">'+esc(it[sel.n])+'</span></div>':'';
   const cbHtml=cb?'<div class="meta">'+(it[cb.n]?'✅ 已完成':'⭕ 未完成')+'</div>':'';
-  const click=cb?'onclick="toggleCheck(\''+it.id+'\')"':'onclick="openModal(\''+it.id+'\')"';
-  const btns='<button class="del" onclick="event.stopPropagation();delItem(\''+it.id+'\')">✕</button>'+(cb?'<button class="edit" onclick="event.stopPropagation();openModal(\''+it.id+'\')">✏️</button>':'');
+  const click=cb?'onclick="toggleCheck(\''+String(it.id||'').replace(/[^a-zA-Z0-9_-]/g,'')+'\')"':'onclick="openModal(\''+String(it.id||'').replace(/[^a-zA-Z0-9_-]/g,'')+'\')"';
+  const btns='<button class="del" onclick="event.stopPropagation();delItem(\''+String(it.id||'').replace(/[^a-zA-Z0-9_-]/g,'')+'\')">✕</button>'+(cb?'<button class="edit" onclick="event.stopPropagation();openModal(\''+String(it.id||'').replace(/[^a-zA-Z0-9_-]/g,'')+'\')">✏️</button>':'');
   return '<div class="item'+(cb&&it[cb.n]?' done':'')+'" '+click+'>'+btns+'<h4>'+esc(title)+'</h4>'+lines+cbHtml+tagHtml+bar+'</div>';
 };
 const STATS_FN=items=>{const tags=new Set();items.forEach(x=>(x.tag||'').split(/[,，\s]+/).forEach(t=>t&&tags.add(t)));const due=items.filter(x=>{if(!x.date)return false;const d=new Date(x.date+'T00:00:00'),t=new Date();return(t-d)/86400000>=(x.review||0)*3}).length;return[{k:'卡片数',v:items.length},{k:'标签数',v:tags.size},{k:'待复习',v:due},{k:'复习次数',v:items.reduce((a,x)=>a+(x.review||0),0)}]};

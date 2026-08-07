@@ -85,6 +85,12 @@ body.dark .filters select,body.dark .filters input,body.dark .filters input::pla
 body.dark .empty{color:#5c6a7a}
 body.dark .progress{background:#27333f}
 @media print{header,.tabs,.fab,.backBtn,.themeBtn{display:none!important}main{padding:0}body{background:#fff;color:#000}}
+
+body.dark input,body.dark select,body.dark textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
+body.dark .stats .st,body.dark .item,body.dark .stat-card{background:#1a222c}
+body.dark .empty{color:#5c6a7a}
+body.dark .foot{color:#5c6a7a}
+body.dark .list-item,body.dark .rec-item,body.dark .plan-item,body.dark .task-item,body.dark .habit-item{background:#1a222c}
 </style>
 </head>
 <body>
@@ -223,7 +229,7 @@ function loadExample(){
     {id:uid(),date:day(5),weight:72.1,fat:18.0},
     {id:uid(),date:day(10),weight:71.8,fat:17.6}
   ];
-  save();renderDash();buildWorkoutFilters();toast('已载入示例数据 ✨');
+  save();renderDash();toast('已载入示例数据 ✨');
 }
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -269,7 +275,7 @@ function switchTab(name){
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
   document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
   if(name==='dash')renderDash();
-  if(name==='workouts'){buildWorkoutFilters();renderWorkouts()}
+  if(name==='workouts'){renderWorkouts()}
   if(name==='exercises')renderExercises();
   if(name==='body')renderBody();
 }
@@ -502,7 +508,6 @@ function importData(input){
 }
 
 renderDash();
-buildWorkoutFilters();
 </script>
 </body>
 </html>

@@ -60,6 +60,8 @@ body.dark .modal{background:#1a222c}
 body.dark .form-row input,body.dark .form-row select,body.dark .form-row textarea{background:#151c25;border-color:#2a3644;color:#d5dce5}
 body.dark .modal-actions .no{background:#27333f;color:#9aa7b8}
 body.dark .item .bar{background:#27333f}
+body.dark .empty{color:#5c6a7a}
+body.dark .foot{color:#5c6a7a}
 .foot{text-align:center;color:#b0b8c4;font-size:11.5px;padding:0 0 24px}
 </style>
 </head>
@@ -95,18 +97,18 @@ body.dark .item .bar{background:#27333f}
 <input type="file" id="importFile" accept=".json" hidden>
 <div class="foot">v2.0 · 数据仅存本地 localStorage · 可导出备份</div>
 <script>
-const KEY='travel_sys_v1';
+const KEY='travel_footprint_v1';
 const COLOR='#00cec9';
 const FIELDS=[{"n": "city", "l": "城市", "t": "text", "o": null, "d": null, "req": true, "placeholder": null}, {"n": "country", "l": "国家/地区", "t": "text", "o": null, "d": "中国", "req": false, "placeholder": null}, {"n": "year", "l": "年份", "t": "number", "o": null, "d": null, "req": false, "placeholder": null}, {"n": "month", "l": "月份", "t": "number", "o": null, "d": null, "req": false, "placeholder": null}, {"n": "with", "l": "同行人", "t": "text", "o": null, "d": null, "req": false, "placeholder": null}, {"n": "note", "l": "见闻", "t": "textarea", "o": null, "d": null, "req": false, "placeholder": null}];
 const EXAMPLE=[{"id": "e1", "city": "北京", "country": "中国", "year": 2025, "month": 10, "with": "家人", "note": "故宫+长城"}, {"id": "e2", "city": "成都", "country": "中国", "year": 2026, "month": 4, "with": "朋友", "note": "火锅之旅"}, {"id": "e3", "city": "东京", "country": "日本", "year": 2026, "month": 7, "with": "", "note": "浅草寺+秋叶原"}];
 const SEARCH_FIELDS=["city", "country", "note"];
 let state=load();
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.items)return s}catch(e){}return {items:[]}}
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.items)return s}catch(e){}try{const old=JSON.parse(localStorage.getItem('travel_sys_v1'));if(old&&old.items){localStorage.setItem(KEY,JSON.stringify(old));localStorage.removeItem('travel_sys_v1');return old}}catch(e){}return {items:[]}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('保存失败：存储空间不足')}}
 function applyTheme(t){document.body.classList.toggle('dark',t==='dark');document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙'}
 function toggleTheme(){const t=document.body.classList.contains('dark')?'light':'dark';localStorage.setItem('theme',t);applyTheme(t)}
 applyTheme(localStorage.getItem('theme')||'light');
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1800)}
 function uid(){return 'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function today(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
@@ -159,14 +161,14 @@ function exportData(){
 function importData(){
   const f=document.getElementById('importFile');f.value='';
   f.onchange=()=>{const r=new FileReader();r.onload=e=>{
-    try{const d=JSON.parse(e.target.result.replace(/^\ufeff/,''));if(!d.items||!Array.isArray(d.items))throw 0;
+    try{const d=JSON.parse(e.target.result.replace(/^\ufeff/,''));if(!d.items||!Array.isArray(d.items))throw 0;d.items=d.items.filter(x=>x&&typeof x==='object');d.items.forEach(x=>{if(typeof x.id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(x.id))x.id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)});
       state=d;save();renderList();renderStats();toast('导入成功 ✓');
     }catch(err){toast('文件格式不正确')}
   };r.readAsText(f.files[0])};
   f.click();
 }
 function loadExample(){state={items:JSON.parse(JSON.stringify(EXAMPLE))};save();renderList();renderStats();toast('已载入示例数据 ✨')}
-const ITEM_HTML=it=>'<div class="item"><button class="del" onclick="delItem(\''+it.id+'\')">✕</button><h4>📍 '+esc(it.city)+'</h4><div class="meta"><b>国家</b> '+esc(it.country||'—')+(it.year?'　<b>时间</b> '+(it.year||'')+(it.month?'年'+it.month+'月':''):'')+'</div><div class="meta">'+(it.with?'<b>同行</b> '+esc(it.with):'')+'</div>'+(it.note?'<div class="meta">'+esc(it.note)+'</div>':'')+'</div>';
+const ITEM_HTML=it=>'<div class="item"><button class="del" onclick="delItem(\''+String(it.id||'').replace(/[^a-zA-Z0-9_-]/g,'')+'\')">✕</button><h4>📍 '+esc(it.city)+'</h4><div class="meta"><b>国家</b> '+esc(it.country||'—')+(it.year?'　<b>时间</b> '+(it.year||'')+(it.month?'年'+it.month+'月':''):'')+'</div><div class="meta">'+(it.with?'<b>同行</b> '+esc(it.with):'')+'</div>'+(it.note?'<div class="meta">'+esc(it.note)+'</div>':'')+'</div>';
 const STATS_FN=items=>{const cities=new Set(items.map(x=>x.city));const countries=new Set(items.map(x=>x.country));const yrs=items.map(x=>x.year).filter(Boolean);return[{k:'城市足迹',v:cities.size},{k:'国家/地区',v:countries.size},{k:'总行程',v:items.length},{k:'最近',v:yrs.length?Math.max(...yrs):'—'}]};
 
 renderList();renderStats();
